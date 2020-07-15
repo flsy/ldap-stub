@@ -1,0 +1,23 @@
+{
+  "name": "ldap-stub",
+  "version": "0.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flsy/ldap-stub.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/flsy/ldap-stub/issues"
+  },
+  "homepage": "https://github.com/flsy/ldap-stub#readme",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "typescript": "^3.9.6"
+  }
+}
