@@ -19,5 +19,8 @@
   },
   "dependencies": {
     "typescript": "^3.9.6"
+  },
+  "devDependencies": {
+    "@types/ldapjs": "^1.0.8"
   }
-}
+  }
