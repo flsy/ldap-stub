@@ -3,6 +3,13 @@ import { ILdapConfig, ILdapService, ILdapUserAccount } from '../interfaces';
 import { Either, isLeft, Left, logger, Right } from '../tools';
 import { user } from '../mocks';
 
+export interface ILdapUserSearch {
+    filter: string;
+    attributes: string;
+    scope?: 'base' | 'one' | 'sub';
+}
+
+
 const notEmpty = <TValue>(value: TValue | null | undefined): value is TValue => {
     return value !== null && value !== undefined;
 };
@@ -85,4 +92,58 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
             return Left(error);
         }
     },
+    search: async (username: string, options: ILdapUserSearch): Promise<Either<Error, object>> => {
+        try {
+            const client = await getClient({ url: config.serverUrl, timeout: 1000, connectTimeout: 1000 });
+            if (isLeft(client)) {
+                // log('error', 'ldapService client error:', client.value.message)
+                return client;
+            }
+
+            await bind(client.value, config.bindDN, config.bindPwd);
+            // log('debug', 'bind ok with', config.bindDN)
+
+            const attributes = options.attributes.split(',').map(e => {
+                const [name, label] = e.split(':');
+                return {name, label}
+            })
+
+            const searchOptions = {
+                filter: options.filter.split('{0}').join(username),
+                attributes: attributes.map(a => a.name),
+                scope: options.scope,
+            };
+
+            // log('debug', JSON.stringify(searchOptions));
+            const columns = attributes
+            try {
+                const results = await search(client.value, config.suffix, searchOptions);
+                if (results.length === 0) {
+                    return Right({ columns, data: [] });
+                }
+
+                const data = results.map(r => {
+                    const attrs = getAttributes(r.attributes);
+                    return attributes.reduce((all, current) => {
+                        const value = attrs.find(a => a.type === current.name);
+                        return {
+                            ...all,
+                            [current.name]: value ? value.vals[0] : ''
+                        }
+                    }, {});
+                });
+
+
+
+                // log('debug', results.length, 'search results')
+
+                return Right({ columns, data });
+            } catch(e) {
+                return Right({ columns, data: [] });
+            }
+        } catch (error) {
+            // log('error', 'ldapService error:', error.message);
+            return Left(error);
+        }
+    }
 });

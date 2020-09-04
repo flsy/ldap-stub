@@ -3,11 +3,12 @@
 
 
 ## example usage
+## Active Directory
 
 ### server
 
 ```typescript
-import { activeDirectoryServer } from 'ldap-stub';
+import { ActiveDirectoryServer } from 'ldap-stub';
 
 activeDirectoryServer({
     bindDN: '',
@@ -23,13 +24,50 @@ activeDirectoryServer({
 ### client
 
 ```typescript
-import { acticveDirectoryClient } from 'ldap-stub';
+import { activeDirectoryClient } from 'ldap-stub';
 
-const client = acticveDirectoryClient({
+const client = activeDirectoryClient({
     serverUrl: '',
     bindDN: '',
     bindPassword: '',
     suffix: '',
+});
+
+const user = await client.login("username", "password");
+
+```
+
+## open-LDAP
+
+### server
+
+```typescript
+import { openLdapServer } from 'ldap-stub';
+
+activeDirectoryServer({
+    bindUser: {
+        username: '',
+        password: '',
+    },
+    dc: ['example', 'com'],
+    accounts: [{ id: '9000', username: 'user1', password: 'password1' }]
+})
+
+
+```
+
+### client
+
+```typescript
+import { openLdapClient } from 'ldap-stub';
+
+const client = openLdapClient({
+    serverUrl: '',
+    bindUser: {
+        username: 'root',
+        password: 'password',
+    },
+    dc: ['example', 'com'],
 });
 
 const user = await client.login("username", "password");

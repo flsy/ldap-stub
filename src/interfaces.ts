@@ -1,4 +1,5 @@
 import { Either } from './tools';
+import { ILdapUserSearch } from './activeDirectory/activeDirectoryClient';
 
 export interface ILdapUserAccount {
     objectSid: string;
@@ -39,6 +40,7 @@ export interface OpenLdapServerConfig extends ICommonConfig {
 
 export interface ILdapService {
     login: (username: string, password: string) => Promise<Either<Error, ILdapUserAccount>>;
+    search: (username: string, options: ILdapUserSearch) => Promise<Either<Error, object>>;
 }
 
 export interface IOpenLdapService {
