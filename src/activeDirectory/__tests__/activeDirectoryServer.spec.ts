@@ -1,5 +1,5 @@
 import * as ldap from 'ldapjs';
-import { serverMock } from '../../testHelpers';
+import { serverMock } from '../testHelpers';
 import { ILdapConfig } from '../../interfaces';
 import { isLeft, isRight } from '../../tools';
 import { activeDirectoryClient } from '../activeDirectoryClient';

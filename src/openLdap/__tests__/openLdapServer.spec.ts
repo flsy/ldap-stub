@@ -1,4 +1,4 @@
-import { openLdapServerMock } from '../../testHelpers';
+import { openLdapServerMock } from '../testHelpers';
 import { IOpenLdapConfig, OpenLdapServerConfig } from '../../interfaces';
 import { isLeft, isRight } from '../../tools';
 import { openLdapClient } from '../openLdapClient';
