@@ -22,17 +22,17 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@types/jest": "^26.0.9",
-    "jest": "^26.4.0",
-    "ldapjs": "^1.0.2",
-    "typescript": "^3.9.6"
+    "@types/ldapjs": "^1.0.8",
+    "ldapjs": "^1.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.11.1",
     "@babel/preset-env": "^7.11.0",
     "@babel/preset-typescript": "^7.10.4",
-    "@types/ldapjs": "^1.0.8",
-    "babel-jest": "^26.3.0"
+    "@types/jest": "^26.0.9",
+    "babel-jest": "^26.3.0",
+    "jest": "^26.4.0",
+    "typescript": "^3.9.6"
   },
   "jest": {
     "rootDir": "src"
