@@ -1,4 +1,5 @@
-import ldap, { Attribute, Client, ClientOptions, SearchEntry, SearchOptions } from 'ldapjs';
+import * as ldap from 'ldapjs';
+import { Attribute, Client, ClientOptions, SearchEntry, SearchOptions } from 'ldapjs';
 import { Either, Left, logger, Optional, Right } from './tools';
 
 export const getClient = (options: ClientOptions): Promise<Either<Error, Client>> =>
