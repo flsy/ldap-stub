@@ -1,4 +1,4 @@
-import * as ldap from 'ldapjs';
+import ldap from 'ldapjs';
 import { Attribute, Client, ClientOptions, SearchEntry, SearchOptions } from 'ldapjs';
 import { Either, Left, logger, Optional, Right } from './tools';
 

@@ -1,4 +1,4 @@
-import * as ldap from 'ldapjs';
+import ldap from 'ldapjs';
 import { logger, Optional } from '../tools';
 import { OpenLdapServerConfig } from '../interfaces';
 

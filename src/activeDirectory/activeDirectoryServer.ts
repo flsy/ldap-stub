@@ -1,4 +1,4 @@
-import * as ldap from 'ldapjs';
+import ldap from 'ldapjs';
 import { Optional } from '../tools';
 
 const lowercaseDC = (suffix: string) =>

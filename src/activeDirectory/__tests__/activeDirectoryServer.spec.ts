@@ -1,4 +1,4 @@
-import * as ldap from 'ldapjs';
+import ldap from 'ldapjs';
 import { serverMock } from '../testHelpers';
 import { ILdapConfig } from '../../interfaces';
 import { isLeft, isRight } from '../../tools';
