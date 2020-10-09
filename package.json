@@ -19,7 +19,15 @@
   "homepage": "https://github.com/flsy/ldap-stub#readme",
   "scripts": {
     "test": "jest",
-    "build": "tsc"
+    "build": "tsc",
+    "format": "echo todooo",
+    "lint": "echo todooo",
+    "prepare": "yarn build",
+    "prepublishOnly": "yarn test && yarn lint",
+    "preversion": "yarn lint",
+    "version": "yarn format && git add -A src",
+    "postversion": "git push && git push --tags",
+    "verify": "yarn format && yarn lint && yarn test && yarn build"
   },
   "dependencies": {
     "@types/ldapjs": "^1.0.8",
