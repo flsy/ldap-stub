@@ -2,13 +2,13 @@ import { Either } from './tools';
 import { ILdapUserSearch } from './activeDirectory/activeDirectoryClient';
 
 export interface ILdapUserAccount {
-    objectSid: string;
     username: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    groups: string[];
+    givenName: string;
+    sn: string;
+    mail?: string;
+    telephoneNumber?: string;
+    memberOf: string[];
+    userPrincipalName: string;
 }
 
 export interface ILdapServiceAccount {

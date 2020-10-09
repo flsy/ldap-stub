@@ -28,6 +28,14 @@ describe('active directory', () => {
         await server.close();
 
         expect(isRight(result)).toEqual(true);
-        expect(result.value).toEqual(user);
+        expect(result.value).toEqual(
+          {    username: 'user',
+              mail: 'joe@email',
+              telephoneNumber: '123456789',
+              givenName: 'John',
+              sn: 'Snow',
+              memberOf: ['Admins'],
+              userPrincipalName: 'joe@email',}
+        );
     });
 });
