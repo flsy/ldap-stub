@@ -4,12 +4,12 @@ import { ILdapUserSearch } from './activeDirectory/activeDirectoryClient';
 
 export const user: ILdapUserAccount = {
     username: 'user',
-    email: 'joe@email',
-    phone: '123456789',
-    firstName: 'John',
-    lastName: 'Snow',
-    groups: ['CN=Admins,CN=Users,DC=ibsng,DC=local'],
-    objectSid: 'external object SID',
+    mail: 'joe@email',
+    telephoneNumber: '123456789',
+    givenName: 'John',
+    sn: 'Snow',
+    memberOf: ['CN=Admins,CN=Groups,DC=ibsng,DC=local'],
+    userPrincipalName: 'joe@email',
 };
 
 export const user1 = {
@@ -23,6 +23,7 @@ export const serviceAccountMock = {
     password: 'password',
 };
 
+// todo - implement(export) or remove
 export const ldapClientMock = (): ILdapService => ({
     search: async (username: string, options: ILdapUserSearch) => { return Left(new Error('TODO: not implemented yet')); },
     login: async (username: string, password: string): Promise<Either<Error, ILdapUserAccount>> => {
@@ -30,6 +31,7 @@ export const ldapClientMock = (): ILdapService => ({
     },
 });
 
+// todo - implement(export) or remove
 export const openLdapClientMock = (): IOpenLdapService => ({
     login: async (username: string, password: string): Promise<Either<Error, ILdapServiceAccount>> => {
         return username === serviceAccountMock.username && password === serviceAccountMock.password

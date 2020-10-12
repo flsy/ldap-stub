@@ -1,7 +1,6 @@
 import { bind, getAttribute, getAttributes, getClient, search } from '../methods';
 import { ILdapConfig, ILdapService, ILdapUserAccount } from '../interfaces';
 import { Either, isLeft, Left, logger, Right } from '../tools';
-import { user } from '../mocks';
 
 export interface ILdapUserSearch {
     filter: string;
@@ -13,7 +12,7 @@ export interface ILdapUserSearch {
 const notEmpty = <TValue>(value: TValue | null | undefined): value is TValue => {
     return value !== null && value !== undefined;
 };
-
+const head = (arr: string[] | undefined): string => (arr ? arr[0] : '');
 const getDN = (values: string[]): string => values[0];
 
 export const getGroups = (values: string[]): string[] => {
@@ -53,7 +52,7 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
             const results = await search(client.value, config.suffix, {
                 filter: '(&(objectCategory=person)(objectClass=user)(sAMAccountName={0}))'.replace('{0}', username),
                 scope: 'sub',
-                attributes: ['memberOf', 'distinguishedName'],
+                attributes: ['memberOf', 'distinguishedName', 'givenName', 'sn', 'mail', 'telephoneNumber', 'userPrincipalName'],
             });
 
             if (results.length !== 1) {
@@ -67,6 +66,11 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
             const attrs = getAttributes(attributes);
             const memberOf = getAttribute('memberOf', attrs);
             const distinguishedName = getAttribute('distinguishedName', attrs);
+            const phone = getAttribute('telephoneNumber', attrs);
+            const email = getAttribute('mail', attrs);
+            const lastName = getAttribute('sn', attrs);
+            const firstName = getAttribute('givenName', attrs);
+            const upn = getAttribute('userPrincipalName', attrs);
 
             // logger('debug', 'attribute: memberOf', memberOf);
             // logger('debug', 'attribute: distinguishedName', distinguishedName);
@@ -85,8 +89,16 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
 
             logger('debug', 'ldapService', 'login successful', { username, groups });
 
-            // TODO: use real details
-            return Right(user);
+            return Right({
+                userPrincipalName: head(upn),
+                givenName: head(firstName),
+                sn: head(lastName),
+                mail: head(email),
+                telephoneNumber: head(phone),
+                username,
+                memberOf: groups,
+
+            });
         } catch (error) {
             logger('error', 'ldapService', error.message);
             return Left(error);

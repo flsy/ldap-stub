@@ -5,7 +5,7 @@ interface IUser extends ILdapUserAccount {
     password: string;
 }
 
-export const serverMock = (port: number, config: ILdapConfig, user: IUser): Promise<{ close: () => void }> =>
+export const serverMock = (port: number, config: ILdapConfig, {sn, givenName, userPrincipalName, memberOf, telephoneNumber, username, password, mail}: IUser): Promise<{ close: () => void }> =>
     new Promise((resolve) => {
         const server = ActiveDirectoryServer({
             suffix: config.suffix,
@@ -13,13 +13,14 @@ export const serverMock = (port: number, config: ILdapConfig, user: IUser): Prom
             bindPassword: config.bindPwd,
             users: [
                 {
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    password: user.password,
-                    username: user.username,
-                    memberOf: user.groups,
-                    phone: user.phone,
-                    email: user.email,
+                    givenName,
+                    sn,
+                    password,
+                    username,
+                    memberOf,
+                    telephoneNumber,
+                    mail,
+                    userPrincipalName
                 },
             ],
         });

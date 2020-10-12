@@ -1,5 +1,10 @@
 import ldap from 'ldapjs';
 import { Optional } from '../tools';
+import {ILdapUserAccount} from "../interfaces";
+
+interface IUser extends ILdapUserAccount{
+    password: string;
+}
 
 const lowercaseDC = (suffix: string) =>
     suffix
@@ -12,7 +17,7 @@ export const ActiveDirectoryServer = (args: {
     bindDN: string;
     bindPassword: string;
     suffix: string;
-    users: Array<{ username: string; firstName: string; lastName: string; password: string; email: string; phone: string; memberOf: string[] }>;
+    users: IUser[];
     logger?: (...args: any[]) => void;
 }) => {
     const server = ldap.createServer();
@@ -35,7 +40,7 @@ export const ActiveDirectoryServer = (args: {
         logger('info', 'SUFFIX bind for', { dn });
 
         const user = args.users.find((u) => {
-            const x = `cn=${u.firstName} ${u.lastName}, ou=Users, ${lowercaseDC(args.suffix)}`;
+            const x = `cn=${u.givenName} ${u.sn}, ou=Users, ${lowercaseDC(args.suffix)}`;
             return dn === x && u.password === req.credentials;
         });
 
@@ -80,8 +85,13 @@ export const ActiveDirectoryServer = (args: {
         const obj = {
             dn: req.dn.toString(),
             attributes: {
-                distinguishedName: `CN=${user.firstName} ${user.lastName},OU=Users,${args.suffix}`,
+                distinguishedName: `CN=${user.givenName} ${user.sn},OU=Users,${args.suffix}`,
                 memberOf: user.memberOf,
+                givenName: user.givenName,
+                sn: user.sn,
+                mail: user.mail,
+                telephoneNumber: user.telephoneNumber,
+                userPrincipalName: user.userPrincipalName
             },
         };
         res.send(obj);
