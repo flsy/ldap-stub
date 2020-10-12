@@ -1,44 +1,9 @@
-import { bind, getAttribute, getAttributes, getClient, search } from '../methods';
-import { ILdapConfig, ILdapService, ILdapUserAccount } from '../interfaces';
-import { Either, isLeft, Left, logger, Right } from '../tools';
-
-export interface ILdapUserSearch {
-    filter: string;
-    attributes: string;
-    scope?: 'base' | 'one' | 'sub';
-}
-
-
-const notEmpty = <TValue>(value: TValue | null | undefined): value is TValue => {
-    return value !== null && value !== undefined;
-};
-const head = (arr: string[] | undefined): string => (arr ? arr[0] : '');
-const getDN = (values: string[]): string => values[0];
-
-export const getGroups = (values: string[]): string[] => {
-    try {
-        return values
-            .map((row: string) => {
-                const cn = row.split(',').find((r) => {
-                    const [name] = r.split('=');
-                    return name.toUpperCase() === 'CN';
-                });
-
-                if (cn) {
-                    const [, value] = cn.split('=');
-                    return value;
-                }
-                return undefined;
-            })
-            .filter(notEmpty);
-    } catch (error) {
-        logger('error', 'ldap get groups', error.message);
-        return [];
-    }
-};
+import { bind, getAttribute, getAttributes, getClient, getGroups, getOptions, search } from '../methods';
+import { ILdapConfig, ILdapService, IOptions, IMinimalAttributes } from '../interfaces';
+import { Either, head, isLeft, Left, logger, Right } from '../tools';
 
 export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
-    login: async (username: string, password: string): Promise<Either<Error, ILdapUserAccount>> => {
+    login: async <T extends IMinimalAttributes>(username, password, options: IOptions<T>) => {
         try {
             const client = await getClient({ url: config.serverUrl, timeout: 1000, connectTimeout: 1000 });
             if (isLeft(client)) {
@@ -49,11 +14,7 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
             await bind(client.value, config.bindDN, config.bindPwd);
             // logger('debug', '1. bind ok with', config.bindDN);
 
-            const results = await search(client.value, config.suffix, {
-                filter: '(&(objectCategory=person)(objectClass=user)(sAMAccountName={0}))'.replace('{0}', username),
-                scope: 'sub',
-                attributes: ['memberOf', 'distinguishedName', 'givenName', 'sn', 'mail', 'telephoneNumber', 'userPrincipalName'],
-            });
+            const results = await search(client.value, config.suffix, getOptions(options) );
 
             if (results.length !== 1) {
                 return Left(new Error(`No unique user to bind, found ${results.length} users`));
@@ -64,47 +25,35 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
 
             const { objectName, attributes } = results[0];
             const attrs = getAttributes(attributes);
-            const memberOf = getAttribute('memberOf', attrs);
+            const userAttributes = options.attributes.reduce((curr, acc) => ({...curr, [acc]: head(getAttribute(acc, attrs))}), {} as T)
             const distinguishedName = getAttribute('distinguishedName', attrs);
-            const phone = getAttribute('telephoneNumber', attrs);
-            const email = getAttribute('mail', attrs);
-            const lastName = getAttribute('sn', attrs);
-            const firstName = getAttribute('givenName', attrs);
-            const upn = getAttribute('userPrincipalName', attrs);
-
-            // logger('debug', 'attribute: memberOf', memberOf);
-            // logger('debug', 'attribute: distinguishedName', distinguishedName);
 
             if (!distinguishedName && !objectName) {
                 return Left(new Error(`No "objectName" or "distinguishedName" attribute found`));
             }
 
-            const dn = distinguishedName ? getDN(distinguishedName) : objectName;
-
+            const dn = head(distinguishedName) || objectName;
             // logger('debug', '2. bind request with', dn);
             await bind(client.value, dn as string, password);
 
             // logger('debug', 'parsing groups from raw input:', memberOf);
-            const groups = memberOf ? getGroups(memberOf) : [];
+            const memberOf = getGroups(options.attributes.find((a) => a === 'memberOf') && getAttribute('memberOf', attrs));
 
-            logger('debug', 'ldapService', 'login successful', { username, groups });
+
+            logger('debug', 'ldapService', 'login successful', { username, memberOf });
 
             return Right({
-                userPrincipalName: head(upn),
-                givenName: head(firstName),
-                sn: head(lastName),
-                mail: head(email),
-                telephoneNumber: head(phone),
                 username,
-                memberOf: groups,
-
+                ...userAttributes,
+                memberOf: memberOf || [],
+                distinguishedName: head(distinguishedName),
             });
         } catch (error) {
             logger('error', 'ldapService', error.message);
             return Left(error);
         }
     },
-    search: async (username: string, options: ILdapUserSearch): Promise<Either<Error, object>> => {
+    search: async <T>(username: string, options: IOptions<T>): Promise<Either<Error, object>> => {
         try {
             const client = await getClient({ url: config.serverUrl, timeout: 1000, connectTimeout: 1000 });
             if (isLeft(client)) {
@@ -115,7 +64,8 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
             await bind(client.value, config.bindDN, config.bindPwd);
             // log('debug', 'bind ok with', config.bindDN)
 
-            const attributes = options.attributes.split(',').map(e => {
+            const userAttributes = options.attributes[0].toString();
+            const attributes = userAttributes.split(',').map(e => {
                 const [name, label] = e.split(':');
                 return {name, label}
             })
@@ -144,8 +94,6 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
                         }
                     }, {});
                 });
-
-
 
                 // log('debug', results.length, 'search results')
 

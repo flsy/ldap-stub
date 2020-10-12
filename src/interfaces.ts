@@ -1,5 +1,4 @@
 import { Either } from './tools';
-import { ILdapUserSearch } from './activeDirectory/activeDirectoryClient';
 
 export interface ILdapUserAccount {
     username: string;
@@ -38,11 +37,27 @@ export interface OpenLdapServerConfig extends ICommonConfig {
     accounts: Array<{ id: string; username: string; password: string }>;
 }
 
+export interface IOptions<T> {
+    filter: string;
+    attributes: Array<keyof T>;
+    scope?: 'sub' | 'one' | 'base'
+}
+
+export interface IMinimalAttributes {
+    distinguishedName: string;
+    memberOf?: string[]
+}
+
 export interface ILdapService {
-    login: (username: string, password: string) => Promise<Either<Error, ILdapUserAccount>>;
-    search: (username: string, options: ILdapUserSearch) => Promise<Either<Error, object>>;
+    login: <T extends IMinimalAttributes>(username: string, password: string, options?: IOptions<T>) => Promise<Either<Error, T>>;
+    search: <T>(username: string, options: IOptions<T>) => Promise<Either<Error, object>>;
 }
 
 export interface IOpenLdapService {
     login: (username: string, password: string) => Promise<Either<Error, ILdapServiceAccount>>;
+}
+
+export interface ILdapClientMock {
+    search: (username, options) => Promise<Either<Error, any>>;
+    login: (username, password, options) => Promise<Either<Error, ILdapUserAccount>>
 }

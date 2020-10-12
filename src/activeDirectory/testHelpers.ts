@@ -36,3 +36,5 @@ export const serverMock = (port: number, config: ILdapConfig, {sn, givenName, us
             });
         });
     });
+
+export const getOptions = (options) => ({...options, attributes: options.attributes as string[] | ('distinguishedName' | 'memberOf')[]})
