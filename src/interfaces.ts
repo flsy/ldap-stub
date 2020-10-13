@@ -56,8 +56,3 @@ export interface ILdapService {
 export interface IOpenLdapService {
     login: (username: string, password: string) => Promise<Either<Error, ILdapServiceAccount>>;
 }
-
-export interface ILdapClientMock {
-    search: (username, options) => Promise<Either<Error, any>>;
-    login: (username, password, options) => Promise<Either<Error, ILdapUserAccount>>
-}

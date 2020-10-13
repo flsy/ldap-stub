@@ -1,12 +1,11 @@
 import ldap from 'ldapjs';
 import { Attribute, Client, ClientOptions, SearchEntry, SearchOptions } from 'ldapjs';
 import {Either, Left, logger, notEmpty, Optional, Right} from './tools';
-import { IOptions } from "./interfaces";
 
 export const getGroups = (values: string[]): string[] => {
   try {
     return values
-      .map((row: string) => {
+      .map(row => {
         const cn = row.split(',').find((r) => {
           const [name] = r.split('=');
           return name.toUpperCase() === 'CN';
@@ -98,5 +97,3 @@ export const getAttribute = <T>(type: keyof T, attributes: Attr[]): Optional<str
     const result = attributes.find((a) => a.type === type);
     return result ? result.vals : undefined;
 };
-
-export const getOptions = (options: IOptions<any>) => ({...options, attributes: options.attributes as string[]})

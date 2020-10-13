@@ -1,4 +1,4 @@
-import { bind, getAttribute, getAttributes, getClient, getGroups, getOptions, search } from '../methods';
+import { bind, getAttribute, getAttributes, getClient, getGroups, search } from '../methods';
 import { ILdapConfig, ILdapService, IOptions, IMinimalAttributes } from '../interfaces';
 import { Either, head, isLeft, Left, logger, Right } from '../tools';
 
@@ -14,7 +14,11 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
             await bind(client.value, config.bindDN, config.bindPwd);
             // logger('debug', '1. bind ok with', config.bindDN);
 
-            const results = await search(client.value, config.suffix, getOptions(options) );
+            const results = await search(client.value, config.suffix, {
+                filter: options.filter.replace('{username}', username),
+                scope: options.scope,
+                attributes: options.attributes as string[],
+            } );
 
             if (results.length !== 1) {
                 return Left(new Error(`No unique user to bind, found ${results.length} users`));
@@ -23,7 +27,7 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
             // logger('debug', 'search result objectName', results[0].objectName);
             // logger('debug', 'search result attributes', results[0].attributes);
 
-            const { objectName, attributes } = results[0];
+            const { objectName, attributes } = head(results);
             const attrs = getAttributes(attributes);
             const userAttributes = options.attributes.reduce((curr, acc) => ({...curr, [acc]: head(getAttribute(acc, attrs))}), {} as T)
             const distinguishedName = getAttribute('distinguishedName', attrs);
@@ -34,19 +38,19 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
 
             const dn = head(distinguishedName) || objectName;
             // logger('debug', '2. bind request with', dn);
-            await bind(client.value, dn as string, password);
+            await bind(client.value, dn, password);
 
             // logger('debug', 'parsing groups from raw input:', memberOf);
-            const memberOf = getGroups(options.attributes.find((a) => a === 'memberOf') && getAttribute('memberOf', attrs));
 
+            const memberOf = userAttributes.memberOf ? { memberOf: getGroups(getAttribute('memberOf', attrs)) } : {};
 
-            logger('debug', 'ldapService', 'login successful', { username, memberOf });
+            logger('debug', 'ldapService', 'login successful', { username }, );
 
             return Right({
                 username,
                 ...userAttributes,
-                memberOf: memberOf || [],
-                distinguishedName: head(distinguishedName),
+                ...memberOf,
+                distinguishedName: dn,
             });
         } catch (error) {
             logger('error', 'ldapService', error.message);
@@ -64,8 +68,7 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
             await bind(client.value, config.bindDN, config.bindPwd);
             // log('debug', 'bind ok with', config.bindDN)
 
-            const userAttributes = options.attributes[0].toString();
-            const attributes = userAttributes.split(',').map(e => {
+            const attributes = (options.attributes as string[]).map((e) => {
                 const [name, label] = e.split(':');
                 return {name, label}
             })
