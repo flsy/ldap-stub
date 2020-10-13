@@ -1,4 +1,4 @@
-import { ILdapClientMock, ILdapServiceAccount, ILdapUserAccount, IOpenLdapService } from './interfaces';
+import { ILdapService, ILdapServiceAccount, ILdapUserAccount, IOpenLdapService } from './interfaces';
 import { Either, Left, Right } from './tools';
 
 export const user: ILdapUserAccount = {
@@ -23,10 +23,10 @@ export const serviceAccountMock = {
 };
 
 // todo - implement(export) or remove
-export const ldapClientMock = (): ILdapClientMock => ({
+export const ldapClientMock = (): ILdapService => ({
     search: async (username, options) => { return Left(new Error('TODO: not implemented yet')); },
     login: async (username, password, options) => {
-        return username === user.username && password === user1.password ? Right(user) : Left(new Error('clientMock no user found'));
+        return username === user.username && password === user1.password ? Right(user as any) : Left(new Error('clientMock no user found'));
     },
 });
 

@@ -28,4 +28,4 @@ export const notEmpty = <TValue>(value: TValue | null | undefined): value is TVa
     return value !== null && value !== undefined;
 };
 
-export const head = (arr: string[] | undefined): string => (arr ? arr[0] : '');
+export const head = <T>(arr: T[]): Optional<T> => arr ? arr[0] : undefined;
