@@ -1,6 +1,28 @@
 import ldap from 'ldapjs';
 import { Attribute, Client, ClientOptions, SearchEntry, SearchOptions } from 'ldapjs';
-import { Either, Left, logger, Optional, Right } from './tools';
+import {Either, Left, logger, notEmpty, Optional, Right} from './tools';
+
+export const getGroups = (values: string[]): string[] => {
+  try {
+    return values
+      .map(row => {
+        const cn = row.split(',').find((r) => {
+          const [name] = r.split('=');
+          return name.toUpperCase() === 'CN';
+        });
+
+        if (cn) {
+          const [, value] = cn.split('=');
+          return value;
+        }
+        return undefined;
+      })
+      .filter(notEmpty);
+  } catch (error) {
+    logger('error', 'ldap get groups', error.message);
+    return [];
+  }
+};
 
 export const getClient = (options: ClientOptions): Promise<Either<Error, Client>> =>
     new Promise((resolve) => {
@@ -71,7 +93,7 @@ export const search = (client: Client, base: string, options: SearchOptions): Pr
 type Attr = { type: string; vals: string[] };
 export const getAttributes = (attributes: Attribute[]): Attr[] => attributes.map((raw) => JSON.parse(raw.toString()));
 
-export const getAttribute = (type: string, attributes: Attr[]): Optional<string[]> => {
+export const getAttribute = <T>(type: keyof T, attributes: Attr[]): Optional<string[]> => {
     const result = attributes.find((a) => a.type === type);
     return result ? result.vals : undefined;
 };
