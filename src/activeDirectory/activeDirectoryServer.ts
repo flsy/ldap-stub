@@ -9,14 +9,16 @@ interface IUser extends ILdapUserAccount {
 const lowercaseDC = (suffix: string) =>
   suffix
     .split(',')
-    .map((a) => a.trim())
-    .map((a) => (a.startsWith('DC=') ? a.replace('DC=', 'dc=') : a))
+    .map((value) => {
+      const dc = value.trim().toLowerCase();
+      return dc.startsWith('dc=') ? dc : value;
+    })
     .join(', ');
 
 export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: string; suffix: string; users: IUser[]; logger?: (...args: any[]) => void }) => {
   const server = ldap.createServer();
 
-  const logger = adArgs.logger ? adArgs.logger : () => null;
+  const logger = adArgs.logger ? adArgs.logger : console.log;
 
   server.bind(adArgs.bindDN, (req: any, res: any, next: any) => {
     logger('info', 'BIND_DN bind for', { dn: req.dn.toString() });
