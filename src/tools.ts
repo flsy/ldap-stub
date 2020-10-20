@@ -1,16 +1,16 @@
 enum tag {
-    'right' = 'right',
-    'left' = 'left',
+  'right' = 'right',
+  'left' = 'left',
 }
 
 interface ILeft<A> {
-    value: A;
-    tag: tag.left;
+  value: A;
+  tag: tag.left;
 }
 
 interface IRight<B> {
-    value: B;
-    tag: tag.right;
+  value: B;
+  tag: tag.right;
 }
 
 export type Either<A, B> = ILeft<A> | IRight<B>;
@@ -25,7 +25,7 @@ export const logger = (type: 'info' | 'error' | 'debug', ...args: any[]) => cons
 export type Optional<T> = T | undefined;
 
 export const notEmpty = <TValue>(value: TValue | null | undefined): value is TValue => {
-    return value !== null && value !== undefined;
+  return value !== null && value !== undefined;
 };
 
-export const head = <T>(arr: T[]): Optional<T> => arr ? arr[0] : undefined;
+export const head = <T>(arr: T[]): Optional<T> => (arr ? arr[0] : undefined);

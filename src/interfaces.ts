@@ -1,58 +1,58 @@
 import { Either } from './tools';
 
 export interface ILdapUserAccount {
-    username: string;
-    givenName: string;
-    sn: string;
-    mail?: string;
-    telephoneNumber?: string;
-    memberOf: string[];
-    userPrincipalName: string;
+  username: string;
+  givenName: string;
+  sn: string;
+  mail?: string;
+  telephoneNumber?: string;
+  memberOf: string[];
+  userPrincipalName: string;
 }
 
 export interface ILdapServiceAccount {
-    objectSid: string;
-    username: string;
+  objectSid: string;
+  username: string;
 }
 
 export interface ILdapConfig {
-    serverUrl: string;
-    bindDN: string;
-    bindPwd: string;
-    suffix: string;
+  serverUrl: string;
+  bindDN: string;
+  bindPwd: string;
+  suffix: string;
 }
 
 interface ICommonConfig {
-    dc: string[]; // todo use OPEN_LDAP_SUFFIX instead of dc:
-    bindUser: {
-        username: string;
-        password: string;
-    };
+  dc: string[]; // todo use OPEN_LDAP_SUFFIX instead of dc:
+  bindUser: {
+    username: string;
+    password: string;
+  };
 }
 export interface IOpenLdapConfig extends ICommonConfig {
-    serverUrl: string;
+  serverUrl: string;
 }
 
 export interface OpenLdapServerConfig extends ICommonConfig {
-    accounts: Array<{ id: string; username: string; password: string }>;
+  accounts: Array<{ id: string; username: string; password: string }>;
 }
 
 export interface IOptions<T> {
-    filter: string;
-    attributes: Array<keyof T>;
-    scope?: 'sub' | 'one' | 'base'
+  filter: string;
+  attributes: Array<keyof T>;
+  scope?: 'sub' | 'one' | 'base';
 }
 
 export interface IMinimalAttributes {
-    distinguishedName: string;
-    memberOf?: string[]
+  distinguishedName: string;
+  memberOf?: string[];
 }
 
 export interface ILdapService {
-    login: <T extends IMinimalAttributes>(username: string, password: string, options?: IOptions<T>) => Promise<Either<Error, T>>;
-    search: <T>(username: string, options: IOptions<T>) => Promise<Either<Error, object>>;
+  login: <T extends IMinimalAttributes>(username: string, password: string, options?: IOptions<T>) => Promise<Either<Error, T>>;
+  search: <T extends IMinimalAttributes>(username: string, options: IOptions<T>) => Promise<Either<Error, object>>;
 }
 
 export interface IOpenLdapService {
-    login: (username: string, password: string) => Promise<Either<Error, ILdapServiceAccount>>;
+  login: (username: string, password: string) => Promise<Either<Error, ILdapServiceAccount>>;
 }
