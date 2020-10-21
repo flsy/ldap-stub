@@ -98,7 +98,7 @@ export const getAttribute = <T>(type: keyof T, attributes: Attr[]): Optional<str
     return result ? result.vals : undefined;
 };
 
-export const getValues = (value: Attr) => {
+export const getValues = (value: Attr): string | string[] => {
   if (!value.vals) return '';
 
   if (value.vals.length > 1) {
@@ -108,10 +108,8 @@ export const getValues = (value: Attr) => {
   return value.vals[0];
 }
 
-export const getSearchResult = async (client, config, username, options) => {
-  return await search(client.value, config.suffix, {
+export const getSearchResult = async (client, config, username, options) => search(client.value, config.suffix, {
     filter: options.filter.replace('{username}', username),
     scope: options.scope,
     attributes: options.attributes as string[],
-  });
-}
+  })
