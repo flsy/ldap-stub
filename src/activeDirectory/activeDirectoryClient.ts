@@ -1,4 +1,4 @@
-import { bind, getAttribute, getAttributes, getClient, getGroups, search } from '../methods';
+import {bind, getAttribute, getAttributes, getClient, getGroups, getSearchResult, getValues, search} from '../methods';
 import { ILdapConfig, ILdapService, IOptions, IMinimalAttributes } from '../interfaces';
 import { Either, head, isLeft, Left, logger, Right } from '../tools';
 
@@ -14,11 +14,7 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
             await bind(client.value, config.bindDN, config.bindPwd);
             // logger('debug', '1. bind ok with', config.bindDN);
 
-            const results = await search(client.value, config.suffix, {
-                filter: options.filter.replace('{username}', username),
-                scope: options.scope,
-                attributes: options.attributes as string[],
-            } );
+            const results = await getSearchResult(client, config, username, options)
 
             if (results.length !== 1) {
                 return Left(new Error(`No unique user to bind, found ${results.length} users`));
@@ -73,16 +69,11 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
                 return {name, label}
             })
 
-            const searchOptions = {
-                filter: options.filter.split('{0}').join(username),
-                attributes: attributes.map(a => a.name),
-                scope: options.scope,
-            };
-
             // log('debug', JSON.stringify(searchOptions));
             const columns = attributes
             try {
-                const results = await search(client.value, config.suffix, searchOptions);
+                const results = await getSearchResult(client, config, username, options)
+
                 if (results.length === 0) {
                     return Right({ columns, data: [] });
                 }
@@ -93,7 +84,7 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
                         const value = attrs.find(a => a.type === current.name);
                         return {
                             ...all,
-                            [current.name]: value ? value.vals[0] : ''
+                            [current.name]: getValues(value)
                         }
                     }, {});
                 });
