@@ -109,7 +109,7 @@ export const getValues = (value: Attr): string | string[] => {
 }
 
 export const getSearchResult = async (client, config, username, options) => search(client.value, config.suffix, {
-    filter: options.filter.replace('{username}', username),
+    filter: options.filter.split('{0}').join(username),
     scope: options.scope,
     attributes: options.attributes as string[],
   })

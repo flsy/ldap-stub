@@ -16,7 +16,7 @@ interface IResult {
 }
 
 const options: IOptions<IResult> = {
-  filter: '(&(objectCategory=person)(objectClass=user)(sAMAccountName={username}))',
+  filter: '(&(objectCategory=person)(objectClass=user)(sAMAccountName={0}))',
   scope: 'sub',
   attributes: ['distinguishedName', 'memberOf', 'givenName', 'sn', 'mail', 'telephoneNumber', 'userPrincipalName'],
 }
