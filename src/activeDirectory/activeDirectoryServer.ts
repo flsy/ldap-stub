@@ -9,8 +9,10 @@ interface IUser extends ILdapUserAccount{
 const lowercaseDC = (suffix: string) =>
     suffix
         .split(',')
-        .map((a) => a.trim())
-        .map((a) => (a.startsWith('DC=') ? a.replace('DC=', 'dc=') : a))
+        .map((value) => {
+            const dc = value.trim();
+            return dc.startsWith('DC=') ? dc.replace('DC=', 'dc=') : dc
+        })
         .join(', ');
 
 export const ActiveDirectoryServer = (args: {

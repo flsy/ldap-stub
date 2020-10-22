@@ -7,7 +7,7 @@ export const user: ILdapUserAccount = {
     telephoneNumber: '123456789',
     givenName: 'John',
     sn: 'Snow',
-    memberOf: ['CN=Admins,CN=Groups,DC=ibsng,DC=local'],
+    memberOf: ['CN=Admins,CN=Groups,DC=ibsng,DC=local', 'CN=Audit,CN=Groups,DC=ibsng,DC=local'],
     userPrincipalName: 'joe@email',
 };
 

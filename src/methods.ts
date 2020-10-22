@@ -97,3 +97,19 @@ export const getAttribute = <T>(type: keyof T, attributes: Attr[]): Optional<str
     const result = attributes.find((a) => a.type === type);
     return result ? result.vals : undefined;
 };
+
+export const getValues = (value: Attr): string | string[] => {
+  if (!value.vals) return '';
+
+  if (value.vals.length > 1) {
+    return value.vals;
+  }
+
+  return value.vals[0];
+}
+
+export const getSearchResult = async (client, config, username, options) => search(client.value, config.suffix, {
+    filter: options.filter.split('{0}').join(username),
+    scope: options.scope,
+    attributes: options.attributes as string[],
+  })
