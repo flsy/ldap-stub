@@ -1,11 +1,11 @@
 import ldap from 'ldapjs';
 import { Attribute, Client, ClientOptions, SearchEntry, SearchOptions } from 'ldapjs';
-import {Either, Left, logger, notEmpty, Optional, Right} from './tools';
+import { Either, Left, logger, notEmpty, Optional, Right } from './tools';
 
 export const getGroups = (values: string[]): string[] => {
   try {
     return values
-      .map(row => {
+      .map((row) => {
         const cn = row.split(',').find((r) => {
           const [name] = r.split('=');
           return name.toUpperCase() === 'CN';
@@ -25,77 +25,77 @@ export const getGroups = (values: string[]): string[] => {
 };
 
 export const getClient = (options: ClientOptions): Promise<Either<Error, Client>> =>
-    new Promise((resolve) => {
-        const client = ldap.createClient(options);
+  new Promise((resolve) => {
+    const client = ldap.createClient(options);
 
-        client.on('connect', () => {
-            logger('debug', 'ldap connected', options.url);
+    client.on('connect', () => {
+      logger('debug', 'ldap connected', options.url);
 
-            resolve(Right(client));
-        });
-
-        client.on('timeout', (error) => {
-            logger('error', 'ldap timeout', error.message);
-            resolve(Left(error));
-        });
-
-        client.on('connectTimeout', (error) => {
-            logger('error', 'ldap connectTimeout', error.message);
-            resolve(Left(error));
-        });
-
-        client.on('error', (error) => {
-            logger('error', 'ldap error', error.message);
-            client.unbind();
-            // client.destroy();
-
-            resolve(Left(error));
-        });
+      resolve(Right(client));
     });
+
+    client.on('timeout', (error) => {
+      logger('error', 'ldap timeout', error.message);
+      resolve(Left(error));
+    });
+
+    client.on('connectTimeout', (error) => {
+      logger('error', 'ldap connectTimeout', error.message);
+      resolve(Left(error));
+    });
+
+    client.on('error', (error) => {
+      logger('error', 'ldap error', error.message);
+      client.unbind();
+      // client.destroy();
+
+      resolve(Left(error));
+    });
+  });
 
 export const bind = (client: Client, username: string, password: string): Promise<void> =>
-    new Promise((resolve, reject) => {
-        client.bind(username, password, (error) => {
-            if (error) {
-                logger('error', 'ldap bind', error.message);
-                return reject(error);
-            }
-            resolve();
-        });
+  new Promise((resolve, reject) => {
+    client.bind(username, password, (error) => {
+      if (error) {
+        logger('error', 'ldap bind', error.message);
+        return reject(error);
+      }
+      resolve();
     });
+  });
 
 export const search = (client: Client, base: string, options: SearchOptions): Promise<SearchEntry[]> =>
-    new Promise((resolve, reject) => {
-        client.search(base, options, (error, result) => {
-            if (error) {
-                logger('error', 'ldap search', error.message);
-                return reject(error);
-            }
+  new Promise((resolve, reject) => {
+    client.search(base, options, (error, result) => {
+      if (error) {
+        logger('error', 'ldap search', error.message);
+        return reject(error);
+      }
 
-            const searchList: SearchEntry[] = [];
+      const searchList: SearchEntry[] = [];
 
-            result.on('searchEntry', (entry) => {
-                searchList.push(entry);
-            });
+      result.on('searchEntry', (entry) => {
+        searchList.push(entry);
+      });
 
-            result.on('error', (err) => {
-                logger('error', 'ldap search error', err.message);
-                return reject(err);
-            });
+      result.on('error', (err) => {
+        logger('error', 'ldap search error', err.message);
+        return reject(err);
+      });
 
-            result.on('end', () => {
-                logger('debug', 'ldap search end', base, 'results:', searchList.length);
-                resolve(searchList);
-            });
-        });
+      result.on('end', () => {
+        logger('debug', 'ldap search end', base, 'results:', searchList.length);
+        resolve(searchList);
+      });
     });
+  });
 
 type Attr = { type: string; vals: string[] };
 export const getAttributes = (attributes: Attribute[]): Attr[] => attributes.map((raw) => JSON.parse(raw.toString()));
 
 export const getAttribute = <T>(type: keyof T, attributes: Attr[]): Optional<string[]> => {
-    const result = attributes.find((a) => a.type === type);
-    return result ? result.vals : undefined;
+  const result = attributes.find((a) => a.type === type);
+  return result ? result.vals : undefined;
 };
 
 export const getValues = (value: Attr): string | string[] => {
@@ -106,10 +106,11 @@ export const getValues = (value: Attr): string | string[] => {
   }
 
   return value.vals[0];
-}
+};
 
-export const getSearchResult = async (client, config, username, options) => search(client.value, config.suffix, {
+export const getSearchResult = async (client, config, username, options) =>
+  search(client.value, config.suffix, {
     filter: options.filter.split('{0}').join(username),
     scope: options.scope,
     attributes: options.attributes as string[],
-  })
+  });
