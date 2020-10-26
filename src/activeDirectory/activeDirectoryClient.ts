@@ -1,4 +1,4 @@
-import { bind, getAttribute, getAttributes, getClient, getGroups, getSearchResult, getValues, search } from '../methods';
+import { bind, getAttribute, getAttributes, getClient, getGroups, getSearchResult, getValues } from '../methods';
 import { ILdapConfig, ILdapService, IOptions, IMinimalAttributes } from '../interfaces';
 import { Either, head, isLeft, Left, logger, Right } from '../tools';
 
@@ -53,7 +53,7 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
       return Left(error);
     }
   },
-  search: async <T>(username: string, options: IOptions<T>): Promise<Either<Error, object>> => {
+  search: async <T>(username: string, options: IOptions<T>): Promise<Either<Error, T[]>> => {
     try {
       const client = await getClient({ url: config.serverUrl, timeout: 1000, connectTimeout: 1000 });
       if (isLeft(client)) {
@@ -64,36 +64,27 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
       await bind(client.value, config.bindDN, config.bindPwd);
       // log('debug', 'bind ok with', config.bindDN)
 
-      const attributes = (options.attributes as string[]).map((e) => {
-        const [name, label] = e.split(':');
-        return { name, label };
-      });
-
       // log('debug', JSON.stringify(searchOptions));
-      const columns = attributes;
       try {
         const results = await getSearchResult(client, config, username, options);
 
         if (results.length === 0) {
-          return Right({ columns, data: [] });
+          return Right([]);
         }
 
         const data = results.map((r) => {
           const attrs = getAttributes(r.attributes);
-          return attributes.reduce((all, current) => {
-            const value = attrs.find((a) => a.type === current.name);
-            return {
-              ...all,
-              [current.name]: getValues(value),
-            };
+          return options.attributes.reduce((all, current) => {
+            const value = attrs.find((a) => a.type === current);
+            return { ...all, [current]: getValues(value) };
           }, {});
         });
 
         // log('debug', results.length, 'search results')
 
-        return Right({ columns, data });
+        return Right(data as T[]);
       } catch (e) {
-        return Right({ columns, data: [] });
+        return Right([]);
       }
     } catch (error) {
       // log('error', 'ldapService error:', error.message);

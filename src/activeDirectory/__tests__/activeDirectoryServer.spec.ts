@@ -64,48 +64,16 @@ describe('search', () => {
     await server.close();
 
     expect(isRight(result)).toEqual(true);
-    expect(result.value).toEqual({
-      columns: [
-        {
-          label: undefined,
-          name: 'distinguishedName',
-        },
-        {
-          label: undefined,
-          name: 'memberOf',
-        },
-        {
-          label: undefined,
-          name: 'givenName',
-        },
-        {
-          label: undefined,
-          name: 'sn',
-        },
-        {
-          label: undefined,
-          name: 'mail',
-        },
-        {
-          label: undefined,
-          name: 'telephoneNumber',
-        },
-        {
-          label: undefined,
-          name: 'userPrincipalName',
-        },
-      ],
-      data: [
-        {
-          distinguishedName: 'CN=John Snow,OU=Users,DC=ibsng, DC=local',
-          givenName: 'John',
-          mail: 'joe@email',
-          memberOf: ['CN=Admins,CN=Groups,DC=ibsng,DC=local', 'CN=Audit,CN=Groups,DC=ibsng,DC=local'],
-          sn: 'Snow',
-          telephoneNumber: '123456789',
-          userPrincipalName: 'joe@email',
-        },
-      ],
-    });
+    expect(result.value).toEqual([
+      {
+        distinguishedName: 'CN=John Snow,OU=Users,DC=ibsng, DC=local',
+        givenName: 'John',
+        mail: 'joe@email',
+        memberOf: ['CN=Admins,CN=Groups,DC=ibsng,DC=local', 'CN=Audit,CN=Groups,DC=ibsng,DC=local'],
+        sn: 'Snow',
+        telephoneNumber: '123456789',
+        userPrincipalName: 'joe@email',
+      },
+    ]);
   });
 });

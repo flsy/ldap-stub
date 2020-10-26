@@ -50,7 +50,7 @@ export interface IMinimalAttributes {
 
 export interface ILdapService {
   login: <T extends IMinimalAttributes>(username: string, password: string, options?: IOptions<T>) => Promise<Either<Error, T>>;
-  search: <T>(username: string, options: IOptions<T>) => Promise<Either<Error, object>>;
+  search: <T>(username: string, options: IOptions<T>) => Promise<Either<Error, T[]>>;
 }
 
 export interface IOpenLdapService {
