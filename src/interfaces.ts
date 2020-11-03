@@ -45,6 +45,7 @@ export interface IOptions<T> {
 
 export interface IMinimalAttributes {
   distinguishedName: string;
+  username?: string;
 }
 
 export interface ILdapService {

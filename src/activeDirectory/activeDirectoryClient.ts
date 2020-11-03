@@ -1,9 +1,9 @@
 import { bind, getAttribute, getAttributes, getClient, getSearchResult, getUserAttributes, getValues } from '../methods';
 import { ILdapConfig, ILdapService, IOptions, IMinimalAttributes } from '../interfaces';
-import { head, isLeft, Left, logger, Right } from '../tools';
+import { Either, head, isLeft, Left, logger, Right } from '../tools';
 
 export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
-  login: async <T extends IMinimalAttributes>(username, password, options: IOptions<T>) => {
+  login: async <T extends IMinimalAttributes>(username: string, password: string, options: IOptions<T>): Promise<Either<Error, T>> => {
     try {
       const client = await getClient({ url: config.serverUrl, timeout: 1000, connectTimeout: 1000 });
       if (isLeft(client)) {
@@ -37,13 +37,13 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
         username,
         ...userAttributes,
         distinguishedName: dn,
-      });
+      } as T);
     } catch (error) {
       logger('error', 'ldapService', error.message);
       return Left(error);
     }
   },
-  search: async <T>(username, options: IOptions<T>) => {
+  search: async <T>(username: string, options: IOptions<T>): Promise<Either<Error, T[]>> => {
     try {
       const client = await getClient({ url: config.serverUrl, timeout: 1000, connectTimeout: 1000 });
       if (isLeft(client)) {

@@ -117,10 +117,10 @@ export const getSearchResult = async (client, config, username, options) =>
   });
 
 export const getUserAttributes = <T>(options: IOptions<T>, ldapAttributes: Attr[]) =>
-  options.attributes.reduce((curr, acc) => {
-    const attribute = getAttribute(acc, ldapAttributes);
+  options.attributes.reduce((acc, curr) => {
+    const attribute = getAttribute(curr, ldapAttributes);
     if (!attribute) {
-      return curr;
+      return acc;
     }
-    return { ...curr, [acc]: attribute.length <= 1 ? head(attribute) : attribute };
-  }, {} as T);
+    return { ...acc, [curr]: attribute.length <= 1 ? head(attribute) : attribute };
+  }, {});
