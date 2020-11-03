@@ -1,5 +1,15 @@
-import { ILdapService, ILdapServiceAccount, ILdapUserAccount, IOpenLdapService } from './interfaces';
+import { ILdapService, ILdapServiceAccount, ILdapUserAccount, IOpenLdapService, IOptions } from './interfaces';
 import { Either, Left, Right } from './tools';
+
+interface IResult {
+  distinguishedName: string;
+  memberOf: string[];
+  givenName: string;
+  sn: string;
+  mail: string;
+  telephoneNumber: string;
+  userPrincipalName: string;
+}
 
 export const user: ILdapUserAccount = {
   username: 'user',
@@ -7,7 +17,7 @@ export const user: ILdapUserAccount = {
   telephoneNumber: '123456789',
   givenName: 'John',
   sn: 'Snow',
-  memberOf: ['CN=Admins,CN=Groups,DC=ibsng,DC=local', 'CN=Audit,CN=Groups,DC=ibsng,DC=local'],
+  memberOf: ['CN=Admins,CN=Groups,DC=example,DC=com', 'CN=Audit,CN=Groups,DC=example,DC=com'],
   userPrincipalName: 'joe@email',
 };
 
@@ -39,4 +49,11 @@ export const openLdapClientMock = (): IOpenLdapService => ({
       ? Right({ username: serviceAccountMock.username, objectSid: serviceAccountMock.objectSid })
       : Left(new Error('clientMock no user found'));
   },
+});
+
+export const optionsMock = (imperatives?: Partial<IOptions<IResult>>): IOptions<IResult> => ({
+  filter: '(&(objectCategory=person)(objectClass=user)(sAMAccountName={0}))',
+  scope: 'sub',
+  attributes: ['distinguishedName', 'memberOf', 'givenName', 'sn', 'mail', 'telephoneNumber', 'userPrincipalName'],
+  ...imperatives,
 });

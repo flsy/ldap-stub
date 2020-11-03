@@ -45,7 +45,6 @@ export interface IOptions<T> {
 
 export interface IMinimalAttributes {
   distinguishedName: string;
-  memberOf?: string[];
 }
 
 export interface ILdapService {
