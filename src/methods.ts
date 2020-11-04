@@ -1,6 +1,7 @@
 import ldap from 'ldapjs';
 import { Attribute, Client, ClientOptions, SearchEntry, SearchOptions } from 'ldapjs';
-import { Either, Left, logger, notEmpty, Optional, Right } from './tools';
+import { Either, head, Left, logger, notEmpty, Optional, Right } from './tools';
+import { IOptions } from './interfaces';
 
 export const getGroups = (values: string[]): string[] => {
   try {
@@ -93,9 +94,9 @@ export const search = (client: Client, base: string, options: SearchOptions): Pr
 type Attr = { type: string; vals: string[] };
 export const getAttributes = (attributes: Attribute[]): Attr[] => attributes.map((raw) => JSON.parse(raw.toString()));
 
-export const getAttribute = <T>(type: keyof T, attributes: Attr[]): Optional<string[]> => {
+export const getAttribute = <T>(type: keyof T, attributes: Attr[]): string[] => {
   const result = attributes.find((a) => a.type === type);
-  return result ? result.vals : undefined;
+  return result ? result.vals : [];
 };
 
 export const getValues = (value: Attr): string | string[] => {
@@ -114,3 +115,17 @@ export const getSearchResult = async (client, config, username, options) =>
     scope: options.scope,
     attributes: options.attributes as string[],
   });
+
+export const getUserAttributes = <T>(options: IOptions<T>, ldapAttributes: Attr[]) =>
+  options.attributes.reduce((acc, curr) => {
+    const attribute = getAttribute<T>(curr, ldapAttributes);
+    if (attribute.length === 0) {
+      return acc;
+    }
+
+    if (attribute.length === 1) {
+      return { ...acc, [curr]: head(attribute) };
+    }
+
+    return { ...acc, [curr]: attribute };
+  }, {});
