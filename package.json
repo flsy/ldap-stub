@@ -1,6 +1,6 @@
 {
   "name": "ldap-stub",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -34,8 +34,6 @@
     "ldapjs": "^1.0.2"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^4.5.0",
-    "@typescript-eslint/parser": "^4.5.0",
     "@babel/core": "^7.11.1",
     "@babel/preset-env": "^7.11.0",
     "@babel/preset-typescript": "^7.10.4",
