@@ -31,7 +31,6 @@ describe('active directory', () => {
       expect(isRight(result)).toEqual(true);
       expect(result.value).toEqual({
         distinguishedName: 'CN=John Snow,OU=Users,DC=example, DC=com',
-        username: 'user',
         mail: 'joe@email',
         telephoneNumber: '123456789',
         givenName: 'John',

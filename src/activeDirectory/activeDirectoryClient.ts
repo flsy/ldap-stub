@@ -21,8 +21,8 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
 
       const { objectName, attributes } = head(results);
       const attrs = getAttributes(attributes);
-      const userAttributes = getUserAttributes(options, attrs);
-      const distinguishedName = getAttribute('distinguishedName', attrs);
+      const userAttributes = getUserAttributes<T>(options, attrs);
+      const distinguishedName = getAttribute<T>('distinguishedName', attrs);
 
       if (!distinguishedName && !objectName) {
         return Left(new Error(`No "objectName" or "distinguishedName" attribute found`));
@@ -34,7 +34,6 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
       logger('debug', 'ldapService', 'login successful', { username });
 
       return Right({
-        username,
         ...userAttributes,
         distinguishedName: dn,
       } as T);
