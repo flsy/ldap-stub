@@ -3,7 +3,7 @@ import { Either, Left, Right } from './tools';
 
 interface IResult {
   distinguishedName: string;
-  memberOf: string[];
+  memberOf: string | string[];
   givenName: string;
   sn: string;
   mail: string;

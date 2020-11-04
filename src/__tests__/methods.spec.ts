@@ -31,6 +31,12 @@ describe('methods test suite', () => {
       expect(result).toEqual([]);
     });
 
+    it('should convert non-array value', () => {
+      const result = getGroups('CN=Admins, OU=IT, DC=example, DC=com');
+
+      expect(result).toEqual(['Admins']);
+    });
+
     it('should return name of the LDAP groups', () => {
       const result = getGroups(['CN=Admins, OU=IT, DC=example, DC=com', 'CN=Marketing, CN=Finance, DC=example, DC=com']);
 

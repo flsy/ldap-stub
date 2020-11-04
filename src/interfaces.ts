@@ -6,7 +6,7 @@ export interface ILdapUserAccount {
   sn: string;
   mail?: string;
   telephoneNumber?: string;
-  memberOf: string[];
+  memberOf: string | string[];
   userPrincipalName: string;
 }
 

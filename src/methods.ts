@@ -1,24 +1,27 @@
 import ldap from 'ldapjs';
 import { Attribute, Client, ClientOptions, SearchEntry, SearchOptions } from 'ldapjs';
-import { Either, head, Left, logger, notEmpty, Optional, Right } from './tools';
+import { Either, head, Left, logger, notEmpty, Right } from './tools';
 import { IOptions } from './interfaces';
 
-export const getGroups = (values: string[]): string[] => {
+export const getGroups = (values: string | string[]): string[] => {
   try {
-    return values
-      .map((row) => {
-        const cn = row.split(',').find((r) => {
-          const [name] = r.split('=');
-          return name.toUpperCase() === 'CN';
-        });
+    if (Array.isArray(values)) {
+      return values
+        .map((row) => {
+          const cn = row.split(',').find((r) => {
+            const [name] = r.split('=');
+            return name.toUpperCase() === 'CN';
+          });
 
-        if (cn) {
-          const [, value] = cn.split('=');
-          return value;
-        }
-        return undefined;
-      })
-      .filter(notEmpty);
+          if (cn) {
+            const [, value] = cn.split('=');
+            return value;
+          }
+          return undefined;
+        })
+        .filter(notEmpty);
+    }
+    return getGroups([values]);
   } catch (error) {
     logger('error', 'ldap get groups', error.message);
     return [];
