@@ -1,10 +1,6 @@
 import ldap from 'ldapjs';
 import { Optional } from '../tools';
-import { ILdapUserAccount } from '../interfaces';
-
-interface IUser extends ILdapUserAccount {
-  password: string;
-}
+import { IUser } from '../interfaces';
 
 const lowercaseDC = (suffix: string) =>
   suffix

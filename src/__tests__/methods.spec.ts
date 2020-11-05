@@ -31,6 +31,12 @@ describe('methods test suite', () => {
       expect(result).toEqual([]);
     });
 
+    it('should convert non-array value', () => {
+      const result = getGroups(['CN=Admins, OU=IT, DC=example, DC=com']);
+
+      expect(result).toEqual(['Admins']);
+    });
+
     it('should return name of the LDAP groups', () => {
       const result = getGroups(['CN=Admins, OU=IT, DC=example, DC=com', 'CN=Marketing, CN=Finance, DC=example, DC=com']);
 
@@ -59,20 +65,20 @@ describe('methods test suite', () => {
         { type: 'givenName', vals: ['John'] },
       ]);
 
-      expect(result).toEqual({ givenName: 'John' });
+      expect(result).toEqual({ givenName: ['John'] });
     });
 
     it('should return ldap attributes', () => {
       const result = getUserAttributes(optionsMock(), ldapAttributesMock);
 
       expect(result).toEqual({
-        distinguishedName: 'CN=John Snow,OU=Users,DC=example, DC=com',
-        givenName: 'John',
-        mail: 'joe@email',
+        distinguishedName: ['CN=John Snow,OU=Users,DC=example, DC=com'],
+        givenName: ['John'],
+        mail: ['joe@email'],
         memberOf: ['CN=Admins,CN=Groups,DC=example,DC=com', 'CN=Audit,CN=Groups,DC=example,DC=com'],
-        sn: 'Snow',
-        telephoneNumber: '123456789',
-        userPrincipalName: 'joe@email',
+        sn: ['Snow'],
+        telephoneNumber: ['123456789'],
+        userPrincipalName: ['joe@email'],
       });
     });
   });

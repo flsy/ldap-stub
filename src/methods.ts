@@ -1,6 +1,6 @@
 import ldap from 'ldapjs';
 import { Attribute, Client, ClientOptions, SearchEntry, SearchOptions } from 'ldapjs';
-import { Either, head, Left, logger, notEmpty, Optional, Right } from './tools';
+import { Either, Left, logger, notEmpty, Right } from './tools';
 import { IOptions } from './interfaces';
 
 export const getGroups = (values: string[]): string[] => {
@@ -99,16 +99,6 @@ export const getAttribute = <T>(type: keyof T, attributes: Attr[]): string[] => 
   return result ? result.vals : [];
 };
 
-export const getValues = (value: Attr): string | string[] => {
-  if (!value.vals) return '';
-
-  if (value.vals.length > 1) {
-    return value.vals;
-  }
-
-  return value.vals[0];
-};
-
 export const getSearchResult = async (client, config, username, options) =>
   search(client.value, config.suffix, {
     filter: options.filter.split('{0}').join(username),
@@ -122,10 +112,5 @@ export const getUserAttributes = <T>(options: IOptions<T>, ldapAttributes: Attr[
     if (attribute.length === 0) {
       return acc;
     }
-
-    if (attribute.length === 1) {
-      return { ...acc, [curr]: head(attribute) };
-    }
-
     return { ...acc, [curr]: attribute };
   }, {});

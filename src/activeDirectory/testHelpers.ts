@@ -1,9 +1,5 @@
-import { ILdapConfig, ILdapUserAccount } from '../interfaces';
+import { ILdapConfig, IUser } from '../interfaces';
 import { ActiveDirectoryServer } from './activeDirectoryServer';
-
-interface IUser extends ILdapUserAccount {
-  password: string;
-}
 
 export const serverMock = (
   port: number,
