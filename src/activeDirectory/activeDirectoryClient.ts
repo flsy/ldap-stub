@@ -1,4 +1,4 @@
-import { bind, getAttribute, getAttributes, getClient, getSearchResult, getUserAttributes, getValues } from '../methods';
+import { bind, getAttribute, getAttributes, getClient, getSearchResult, getUserAttributes } from '../methods';
 import { ILdapConfig, ILdapService, IOptions, IMinimalAttributes } from '../interfaces';
 import { Either, head, isLeft, Left, logger, Right } from '../tools';
 
@@ -24,18 +24,17 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
       const userAttributes = getUserAttributes<T>(options, attrs);
       const distinguishedName = getAttribute<T>('distinguishedName', attrs);
 
-      if (!distinguishedName && !objectName) {
+      if (!head(distinguishedName) && !objectName) {
         return Left(new Error(`No "objectName" or "distinguishedName" attribute found`));
       }
 
-      const dn = head(distinguishedName) || objectName;
-      await bind(client.value, dn, password);
+      await bind(client.value, head(distinguishedName) || objectName, password);
 
       logger('debug', 'ldapService', 'login successful', { username });
 
       return Right({
         ...userAttributes,
-        distinguishedName: dn,
+        distinguishedName,
       } as T);
     } catch (error) {
       logger('error', 'ldapService', error.message);
@@ -61,7 +60,8 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
         const attrs = getAttributes(r.attributes);
         return options.attributes.reduce((all, current) => {
           const value = attrs.find((a) => a.type === current);
-          return { ...all, [current]: getValues(value) };
+          if (!value.vals) return all;
+          return { ...all, [current]: value.vals };
         }, {});
       });
 

@@ -1,27 +1,24 @@
 import ldap from 'ldapjs';
 import { Attribute, Client, ClientOptions, SearchEntry, SearchOptions } from 'ldapjs';
-import { Either, head, Left, logger, notEmpty, Right } from './tools';
+import { Either, Left, logger, notEmpty, Right } from './tools';
 import { IOptions } from './interfaces';
 
-export const getGroups = (values: string | string[]): string[] => {
+export const getGroups = (values: string[]): string[] => {
   try {
-    if (Array.isArray(values)) {
-      return values
-        .map((row) => {
-          const cn = row.split(',').find((r) => {
-            const [name] = r.split('=');
-            return name.toUpperCase() === 'CN';
-          });
+    return values
+      .map((row) => {
+        const cn = row.split(',').find((r) => {
+          const [name] = r.split('=');
+          return name.toUpperCase() === 'CN';
+        });
 
-          if (cn) {
-            const [, value] = cn.split('=');
-            return value;
-          }
-          return undefined;
-        })
-        .filter(notEmpty);
-    }
-    return getGroups([values]);
+        if (cn) {
+          const [, value] = cn.split('=');
+          return value;
+        }
+        return undefined;
+      })
+      .filter(notEmpty);
   } catch (error) {
     logger('error', 'ldap get groups', error.message);
     return [];
@@ -102,16 +99,6 @@ export const getAttribute = <T>(type: keyof T, attributes: Attr[]): string[] => 
   return result ? result.vals : [];
 };
 
-export const getValues = (value: Attr): string | string[] => {
-  if (!value.vals) return '';
-
-  if (value.vals.length > 1) {
-    return value.vals;
-  }
-
-  return value.vals[0];
-};
-
 export const getSearchResult = async (client, config, username, options) =>
   search(client.value, config.suffix, {
     filter: options.filter.split('{0}').join(username),
@@ -125,10 +112,5 @@ export const getUserAttributes = <T>(options: IOptions<T>, ldapAttributes: Attr[
     if (attribute.length === 0) {
       return acc;
     }
-
-    if (attribute.length === 1) {
-      return { ...acc, [curr]: head(attribute) };
-    }
-
     return { ...acc, [curr]: attribute };
   }, {});

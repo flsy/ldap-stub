@@ -1,17 +1,8 @@
-import { ILdapService, ILdapServiceAccount, ILdapUserAccount, IOpenLdapService, IOptions } from './interfaces';
+import { ILdapService, ILdapServiceAccount, IOpenLdapService, IOptions, ILdapUserResult, IUser } from './interfaces';
 import { Either, Left, Right } from './tools';
 
-interface IResult {
-  distinguishedName: string;
-  memberOf: string | string[];
-  givenName: string;
-  sn: string;
-  mail: string;
-  telephoneNumber: string;
-  userPrincipalName: string;
-}
-
-export const user: ILdapUserAccount = {
+export const user: IUser = {
+  password: 'password',
   username: 'user',
   mail: 'joe@email',
   telephoneNumber: '123456789',
@@ -19,11 +10,6 @@ export const user: ILdapUserAccount = {
   sn: 'Snow',
   memberOf: ['CN=Admins,CN=Groups,DC=example,DC=com', 'CN=Audit,CN=Groups,DC=example,DC=com'],
   userPrincipalName: 'joe@email',
-};
-
-export const user1 = {
-  ...user,
-  password: 'password',
 };
 
 export const serviceAccountMock = {
@@ -38,7 +24,7 @@ export const ldapClientMock = (): ILdapService => ({
     return Left(new Error('TODO: not implemented yet'));
   },
   login: async (username, password, options) => {
-    return username === user.username && password === user1.password ? Right(user as any) : Left(new Error('clientMock no user found'));
+    return username === user.username && password === user.password ? Right(user as any) : Left(new Error('clientMock no user found'));
   },
 });
 
@@ -51,7 +37,7 @@ export const openLdapClientMock = (): IOpenLdapService => ({
   },
 });
 
-export const optionsMock = (imperatives?: Partial<IOptions<IResult>>): IOptions<IResult> => ({
+export const optionsMock = (imperatives?: Partial<IOptions<ILdapUserResult>>): IOptions<ILdapUserResult> => ({
   filter: '(&(objectCategory=person)(objectClass=user)(sAMAccountName={0}))',
   scope: 'sub',
   attributes: ['distinguishedName', 'memberOf', 'givenName', 'sn', 'mail', 'telephoneNumber', 'userPrincipalName'],

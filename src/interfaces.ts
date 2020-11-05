@@ -1,6 +1,6 @@
 import { Either } from './tools';
 
-export interface ILdapUserAccount {
+interface ILdapUserAccount {
   username: string;
   givenName: string;
   sn: string;
@@ -8,6 +8,10 @@ export interface ILdapUserAccount {
   telephoneNumber?: string;
   memberOf: string | string[];
   userPrincipalName: string;
+}
+
+export interface IUser extends ILdapUserAccount {
+  password: string;
 }
 
 export interface ILdapServiceAccount {
@@ -44,7 +48,7 @@ export interface IOptions<T> {
 }
 
 export interface IMinimalAttributes {
-  distinguishedName: string;
+  distinguishedName: string[];
 }
 
 export interface ILdapService {
@@ -54,4 +58,14 @@ export interface ILdapService {
 
 export interface IOpenLdapService {
   login: (username: string, password: string) => Promise<Either<Error, ILdapServiceAccount>>;
+}
+
+export interface ILdapUserResult {
+  distinguishedName: string[];
+  memberOf: string[];
+  givenName: string[];
+  sn: string[];
+  mail: string[];
+  telephoneNumber: string[];
+  userPrincipalName: string[];
 }
