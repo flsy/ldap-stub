@@ -8,9 +8,11 @@ export const serverMock = (
 ): Promise<{ close: () => void }> =>
   new Promise((resolve) => {
     const server = ActiveDirectoryServer({
+      logger: console.log,
       suffix: config.suffix,
       bindDN: config.bindDN,
       bindPassword: config.bindPwd,
+      usersBaseDN: config.usersBaseDN,
       users: [
         {
           givenName,

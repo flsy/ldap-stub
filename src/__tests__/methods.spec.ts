@@ -4,7 +4,7 @@ import { optionsMock } from '../mocks';
 const ldapAttributesMock = [
   {
     type: 'distinguishedName',
-    vals: ['CN=John Snow,OU=Users,DC=example, DC=com'],
+    vals: ['CN=John Snow,CN=Users,DC=example, DC=com'],
   },
   {
     type: 'memberOf',
@@ -32,13 +32,13 @@ describe('methods test suite', () => {
     });
 
     it('should convert non-array value', () => {
-      const result = getGroups(['CN=Admins, OU=IT, DC=example, DC=com']);
+      const result = getGroups(['CN=Admins, CN=IT, DC=example, DC=com']);
 
       expect(result).toEqual(['Admins']);
     });
 
     it('should return name of the LDAP groups', () => {
-      const result = getGroups(['CN=Admins, OU=IT, DC=example, DC=com', 'CN=Marketing, CN=Finance, DC=example, DC=com']);
+      const result = getGroups(['CN=Admins, CN=IT, DC=example, DC=com', 'CN=Marketing, CN=Finance, DC=example, DC=com']);
 
       expect(result).toEqual(['Admins', 'Marketing']);
     });
@@ -49,7 +49,7 @@ describe('methods test suite', () => {
       const result = getUserAttributes(optionsMock(), [
         {
           type: 'wrongAttribute',
-          vals: ['CN=John Snow,OU=Users,DC=example, DC=com'],
+          vals: ['CN=John Snow,CN=Users,DC=example, DC=com'],
         },
       ]);
 
@@ -60,7 +60,7 @@ describe('methods test suite', () => {
       const result = getUserAttributes(optionsMock(), [
         {
           type: 'wrongAttribute',
-          vals: ['CN=John Snow,OU=Users,DC=example, DC=com'],
+          vals: ['CN=John Snow,CN=Users,DC=example, DC=com'],
         },
         { type: 'givenName', vals: ['John'] },
       ]);
@@ -72,7 +72,7 @@ describe('methods test suite', () => {
       const result = getUserAttributes(optionsMock(), ldapAttributesMock);
 
       expect(result).toEqual({
-        distinguishedName: ['CN=John Snow,OU=Users,DC=example, DC=com'],
+        distinguishedName: ['CN=John Snow,CN=Users,DC=example, DC=com'],
         givenName: ['John'],
         mail: ['joe@email'],
         memberOf: ['CN=Admins,CN=Groups,DC=example,DC=com', 'CN=Audit,CN=Groups,DC=example,DC=com'],
