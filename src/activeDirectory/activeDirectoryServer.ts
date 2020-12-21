@@ -2,26 +2,19 @@ import ldap from 'ldapjs';
 import { head, Optional } from '../tools';
 import { IUser } from '../interfaces';
 
-const lower = (dnBit: string) => (type: 'DC=' | 'CN=' | 'OU=') => dnBit.replace(type, type.toLowerCase());
+type DNType = 'DC=' | 'CN=' | 'OU=';
+type Attribute = 'userprincipalname' | 'samaccountname';
+
+const dnTypes: DNType[] = ['DC=', 'CN=', 'OU='];
+
+const lower = (dnBit: string, type: DNType) => dnBit.replace(type, type.toLowerCase());
 
 const lowerDnBit = (dnBit: string) => {
-  if (dnBit.startsWith('DC=')) {
-    return lower(dnBit)('DC=');
-  }
-  if (dnBit.startsWith('OU=')) {
-    return lower(dnBit)('OU=');
-  }
-  if (dnBit.startsWith('CN=')) {
-    return lower(dnBit)('CN=');
-  }
-  return dnBit;
+  const bit = dnBit.trim();
+  return dnTypes.map((type: DNType) => (bit.startsWith(type) ? lower(bit, type) : undefined)).join('');
 };
 
-const lowercaseDn = (suffix: string) =>
-  suffix
-    .split(',')
-    .map((value) => lowerDnBit(value.trim()))
-    .join(', ');
+const lowercaseDn = (suffix: string) => suffix.split(',').map(lowerDnBit).join(', ');
 
 export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: string; suffix: string; users: IUser[]; usersBaseDN: string; logger?: (...args: any[]) => void }) => {
   const server = ldap.createServer();
@@ -66,18 +59,22 @@ export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: st
     return next();
   };
 
-  const getAttribute = (filter): Optional<string> => {
-    const match = filter.match(/samaccountname/gm) || filter.match(/userprincipalname/gm);
-    return head(match);
+  const getAttribute = (filter: string): Attribute => {
+    if (filter.includes('@')) {
+      return 'userprincipalname';
+    }
+    return 'samaccountname';
   };
 
-  const getUsername = (filter: string, attribute: string): Optional<string> => {
+  const getUsername = (filter: string, attribute: Attribute): Optional<string> => {
     const f = filter.split('(').find((s: string) => s.startsWith(attribute));
     if (!f) return;
     const r = f.split(')')[0];
     if (!r) return;
 
     const result = r.split('=')[1];
+
+    console.log('ATTR::', attribute);
 
     if (attribute === 'userprincipalname') {
       return result.split('@')[0];

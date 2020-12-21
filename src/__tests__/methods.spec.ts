@@ -38,7 +38,7 @@ describe('methods test suite', () => {
     });
 
     it('should return name of the LDAP groups', () => {
-      const result = getGroups(['CN=Admins, CN=IT, DC=example, DC=com', 'CN=Marketing, CN=Finance, DC=example, DC=com']);
+      const result = getGroups(['CN=Admins, OU=IT, DC=example, DC=com', 'CN=Marketing, OU=Finance, DC=example, DC=com']);
 
       expect(result).toEqual(['Admins', 'Marketing']);
     });

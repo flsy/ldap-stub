@@ -69,7 +69,7 @@ describe('active directory', () => {
         user.username,
         user.password,
         optionsMock({
-          filter: '(&(objectcategory=user)(userPrincipalName={0}))',
+          filter: '(&(objectcategory=user)(userPrincipalName=user@example.com))',
         }),
       );
       await server.close();
