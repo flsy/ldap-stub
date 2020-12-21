@@ -66,15 +66,14 @@ export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: st
     return 'samaccountname';
   };
 
-  const getUsername = (filter: string, attribute: Attribute): Optional<string> => {
+  const getUsername = (filter: string): Optional<string> => {
+    const attribute = getAttribute(filter);
     const f = filter.split('(').find((s: string) => s.startsWith(attribute));
     if (!f) return;
     const r = f.split(')')[0];
     if (!r) return;
 
     const result = r.split('=')[1];
-
-    console.log('ATTR::', attribute);
 
     if (attribute === 'userprincipalname') {
       return result.split('@')[0];
@@ -84,9 +83,8 @@ export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: st
 
   server.search(adArgs.suffix, authorize, (req: any, res: any, next: any) => {
     const dn = req.dn.toString();
-    const filter = req.filter.toString();
 
-    const username = getUsername(filter, getAttribute(filter));
+    const username = getUsername(req.filter.toString());
 
     const user = adArgs.users.find((u) => u.username === username);
 
