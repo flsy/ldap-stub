@@ -9,7 +9,7 @@ export const user: IUser = {
   givenName: 'John',
   sn: 'Snow',
   memberOf: ['CN=Admins,CN=Groups,DC=example,DC=com', 'CN=Audit,CN=Groups,DC=example,DC=com'],
-  userPrincipalName: 'joe@email',
+  userPrincipalName: 'user@example.com',
 };
 
 export const serviceAccountMock = {

@@ -24,6 +24,7 @@ export interface ILdapConfig {
   bindDN: string;
   bindPwd: string;
   suffix: string;
+  usersBaseDN: string;
 }
 
 interface ICommonConfig {

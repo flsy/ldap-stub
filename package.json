@@ -19,7 +19,7 @@
   "homepage": "https://github.com/flsy/ldap-stub#readme",
   "scripts": {
     "test": "jest",
-    "build": "tsc",
+    "build": "rm -rf ./lib && tsc",
     "format": "prettier --write \"src/**/*.ts\" --loglevel error",
     "lint": "eslint '*/**/*.{js,ts}' --quiet",
     "prepare": "yarn build",

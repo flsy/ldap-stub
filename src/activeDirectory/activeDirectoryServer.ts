@@ -1,17 +1,22 @@
 import ldap from 'ldapjs';
-import { Optional } from '../tools';
+import { head, Optional } from '../tools';
 import { IUser } from '../interfaces';
 
-const lowercaseDC = (suffix: string) =>
-  suffix
-    .split(',')
-    .map((value) => {
-      const dc = value.trim();
-      return dc.startsWith('DC=') ? dc.replace('DC=', 'dc=') : dc;
-    })
-    .join(', ');
+type DNType = 'DC=' | 'CN=' | 'OU=';
+type Attribute = 'userprincipalname' | 'samaccountname';
 
-export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: string; suffix: string; users: IUser[]; logger?: (...args: any[]) => void }) => {
+const dnTypes: DNType[] = ['DC=', 'CN=', 'OU='];
+
+const lower = (dnBit: string, type: DNType) => dnBit.replace(type, type.toLowerCase());
+
+const lowerDnBit = (dnBit: string) => {
+  const bit = dnBit.trim();
+  return dnTypes.map((type: DNType) => (bit.startsWith(type) ? lower(bit, type) : undefined)).join('');
+};
+
+const lowercaseDn = (suffix: string) => suffix.split(',').map(lowerDnBit).join(', ');
+
+export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: string; suffix: string; users: IUser[]; usersBaseDN: string; logger?: (...args: any[]) => void }) => {
   const server = ldap.createServer();
 
   const logger = adArgs.logger ? adArgs.logger : () => null;
@@ -20,6 +25,7 @@ export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: st
     logger('info', 'BIND_DN bind for', { dn: req.dn.toString() });
 
     if (!req.dn.equals(adArgs.bindDN) || req.credentials !== adArgs.bindPassword) {
+      logger('error', 'INVALID_CREDENTIALS', adArgs, req.credentials);
       return next(new ldap.InvalidCredentialsError());
     }
 
@@ -32,7 +38,7 @@ export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: st
     logger('info', 'SUFFIX bind for', { dn });
 
     const user = adArgs.users.find((u) => {
-      const x = `cn=${u.givenName} ${u.sn}, ou=Users, ${lowercaseDC(adArgs.suffix)}`;
+      const x = `cn=${u.givenName} ${u.sn}, ${lowercaseDn(adArgs.usersBaseDN)}`;
       return dn === x && u.password === req.credentials;
     });
 
@@ -53,13 +59,26 @@ export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: st
     return next();
   };
 
-  const getUsername = (dn: string): Optional<string> => {
-    const f = dn.split('(').find((s: string) => s.startsWith('samaccountname'));
+  const getAttribute = (filter: string): Attribute => {
+    if (filter.includes('@')) {
+      return 'userprincipalname';
+    }
+    return 'samaccountname';
+  };
+
+  const getUsername = (filter: string): Optional<string> => {
+    const attribute = getAttribute(filter);
+    const f = filter.split('(').find((s: string) => s.startsWith(attribute));
     if (!f) return;
     const r = f.split(')')[0];
     if (!r) return;
 
-    return r.split('=')[1];
+    const result = r.split('=')[1];
+
+    if (attribute === 'userprincipalname') {
+      return result.split('@')[0];
+    }
+    return result;
   };
 
   server.search(adArgs.suffix, authorize, (req: any, res: any, next: any) => {
@@ -77,7 +96,7 @@ export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: st
     const obj = {
       dn: req.dn.toString(),
       attributes: {
-        distinguishedName: `CN=${user.givenName} ${user.sn},OU=Users,${adArgs.suffix}`,
+        distinguishedName: `CN=${user.givenName} ${user.sn},${adArgs.usersBaseDN}`,
         memberOf: user.memberOf,
         givenName: user.givenName,
         sn: user.sn,

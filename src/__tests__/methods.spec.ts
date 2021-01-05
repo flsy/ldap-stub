@@ -31,8 +31,14 @@ describe('methods test suite', () => {
       expect(result).toEqual([]);
     });
 
-    it('should convert non-array value', () => {
+    it('should convert non-array value using OU=IT in DN', () => {
       const result = getGroups(['CN=Admins, OU=IT, DC=example, DC=com']);
+
+      expect(result).toEqual(['Admins']);
+    });
+
+    it('should convert non-array value using CN=IT in DN', () => {
+      const result = getGroups(['CN=Admins, CN=IT, DC=example, DC=com']);
 
       expect(result).toEqual(['Admins']);
     });
@@ -60,7 +66,7 @@ describe('methods test suite', () => {
       const result = getUserAttributes(optionsMock(), [
         {
           type: 'wrongAttribute',
-          vals: ['CN=John Snow,OU=Users,DC=example, DC=com'],
+          vals: ['CN=John Snow,CN=Users,DC=example, DC=com'],
         },
         { type: 'givenName', vals: ['John'] },
       ]);
@@ -68,7 +74,7 @@ describe('methods test suite', () => {
       expect(result).toEqual({ givenName: ['John'] });
     });
 
-    it('should return ldap attributes', () => {
+    it('should return ldap attributes using OU=Users in DN', () => {
       const result = getUserAttributes(optionsMock(), ldapAttributesMock);
 
       expect(result).toEqual({
@@ -79,6 +85,24 @@ describe('methods test suite', () => {
         sn: ['Snow'],
         telephoneNumber: ['123456789'],
         userPrincipalName: ['joe@email'],
+      });
+    });
+
+    it('should return ldap attributes using CN=Users in DN', () => {
+      const result = getUserAttributes(optionsMock(), [
+        {
+          type: 'distinguishedName',
+          vals: ['CN=John Snow,OU=Users,DC=example, DC=com'],
+        },
+        {
+          type: 'memberOf',
+          vals: ['CN=Admins,OU=Groups,DC=example,DC=com', 'CN=Audit,OU=Groups,DC=example,DC=com'],
+        },
+      ]);
+
+      expect(result).toEqual({
+        distinguishedName: ['CN=John Snow,OU=Users,DC=example, DC=com'],
+        memberOf: ['CN=Admins,OU=Groups,DC=example,DC=com', 'CN=Audit,OU=Groups,DC=example,DC=com'],
       });
     });
   });
