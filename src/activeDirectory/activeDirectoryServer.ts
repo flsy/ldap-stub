@@ -93,7 +93,6 @@ export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: st
       return next(new ldap.NoSuchObjectError(dn));
     }
 
-    logger('info', 'user search result:', user);
     res.send({
       dn: req.dn.toString(),
       attributes: {
