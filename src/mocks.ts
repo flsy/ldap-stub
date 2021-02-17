@@ -8,6 +8,7 @@ export const user: IUser = {
   telephoneNumber: '123456789',
   givenName: 'John',
   sn: 'Snow',
+  displayName: 'SNOW John',
   memberOf: ['CN=Admins,CN=Groups,DC=example,DC=com', 'CN=Audit,CN=Groups,DC=example,DC=com'],
   userPrincipalName: 'user@example.com',
 };
