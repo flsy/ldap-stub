@@ -41,6 +41,6 @@ export const openLdapClientMock = (): IOpenLdapService => ({
 export const optionsMock = (imperatives?: Partial<IOptions<ILdapUserResult>>): IOptions<ILdapUserResult> => ({
   filter: '(&(objectCategory=person)(objectClass=user)(sAMAccountName={0}))',
   scope: 'sub',
-  attributes: ['distinguishedName', 'memberOf', 'givenName', 'sn', 'mail', 'telephoneNumber', 'userPrincipalName', 'displayName'],
+  attributes: ['distinguishedName', 'memberOf', 'givenName', 'sn', 'mail', 'telephoneNumber', 'userPrincipalName'],
   ...imperatives,
 });
