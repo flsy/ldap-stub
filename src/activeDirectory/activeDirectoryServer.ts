@@ -1,5 +1,5 @@
 import ldap from 'ldapjs';
-import { head, Optional } from '../tools';
+import { Optional } from '../tools';
 import { IUser } from '../interfaces';
 
 type DNType = 'DC=' | 'CN=' | 'OU=';
@@ -45,7 +45,6 @@ export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: st
     if (!user) {
       return next(new ldap.InvalidCredentialsError());
     }
-
     res.end();
     return next();
   });
@@ -85,6 +84,7 @@ export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: st
     const dn = req.dn.toString();
 
     const username = getUsername(req.filter.toString());
+    logger('info', 'search for:', username);
 
     const user = adArgs.users.find((u) => u.username === username);
 
@@ -93,19 +93,14 @@ export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: st
       return next(new ldap.NoSuchObjectError(dn));
     }
 
-    const obj = {
+    logger('info', 'user search result:', user);
+    res.send({
       dn: req.dn.toString(),
       attributes: {
+        ...user,
         distinguishedName: `CN=${user.givenName} ${user.sn},${adArgs.usersBaseDN}`,
-        memberOf: user.memberOf,
-        givenName: user.givenName,
-        sn: user.sn,
-        mail: user.mail,
-        telephoneNumber: user.telephoneNumber,
-        userPrincipalName: user.userPrincipalName,
       },
-    };
-    res.send(obj);
+    });
     res.end();
   });
   return server;

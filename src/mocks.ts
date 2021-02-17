@@ -8,6 +8,7 @@ export const user: IUser = {
   telephoneNumber: '123456789',
   givenName: 'John',
   sn: 'Snow',
+  displayName: 'SNOW John',
   memberOf: ['CN=Admins,CN=Groups,DC=example,DC=com', 'CN=Audit,CN=Groups,DC=example,DC=com'],
   userPrincipalName: 'user@example.com',
 };
@@ -40,6 +41,6 @@ export const openLdapClientMock = (): IOpenLdapService => ({
 export const optionsMock = (imperatives?: Partial<IOptions<ILdapUserResult>>): IOptions<ILdapUserResult> => ({
   filter: '(&(objectCategory=person)(objectClass=user)(sAMAccountName={0}))',
   scope: 'sub',
-  attributes: ['distinguishedName', 'memberOf', 'givenName', 'sn', 'mail', 'telephoneNumber', 'userPrincipalName'],
+  attributes: ['distinguishedName', 'memberOf', 'givenName', 'sn', 'mail', 'telephoneNumber', 'userPrincipalName', 'displayName'],
   ...imperatives,
 });

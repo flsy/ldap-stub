@@ -4,6 +4,7 @@ interface ILdapUserAccount {
   username: string;
   givenName: string;
   sn: string;
+  displayName?: string;
   mail?: string;
   telephoneNumber?: string;
   memberOf: string | string[];
@@ -66,6 +67,7 @@ export interface ILdapUserResult {
   memberOf: string[];
   givenName: string[];
   sn: string[];
+  displayName: string[];
   mail: string[];
   telephoneNumber: string[];
   userPrincipalName: string[];
