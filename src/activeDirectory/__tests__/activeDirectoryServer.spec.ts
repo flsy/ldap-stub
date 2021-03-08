@@ -88,6 +88,15 @@ describe('active directory', () => {
   });
 
   describe('search', () => {
+    it('should return [] when no user found', async () => {
+      const server = await serverMock(1234, ldapMockSettings(), user);
+      const result = await activeDirectoryClient(ldapMockSettings()).search('arya', optionsMock());
+      await server.close();
+
+      expect(isRight(result)).toEqual(true);
+      expect(result.value).toEqual([]);
+    });
+
     it('should search for user in Active Directory server', async () => {
       const server = await serverMock(1234, ldapMockSettings(), user);
       const result = await activeDirectoryClient(ldapMockSettings()).search(user.username, optionsMock());

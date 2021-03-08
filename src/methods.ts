@@ -99,12 +99,18 @@ export const getAttribute = <T>(type: keyof T, attributes: Attr[]): string[] => 
   return result ? result.vals : [];
 };
 
-export const getSearchResult = async (client, config, username, options) =>
-  search(client.value, config.suffix, {
-    filter: options.filter.split('{0}').join(username),
-    scope: options.scope,
-    attributes: options.attributes as string[],
-  });
+export const getSearchResult = async (client, config, username, options): Promise<SearchEntry[]> => {
+  try {
+    return await search(client.value, config.suffix, {
+      filter: options.filter.split('{0}').join(username),
+      scope: options.scope,
+      attributes: options.attributes as string[],
+    });
+  } catch (error) {
+    logger('error', 'getSearchResult', error.message);
+    return [];
+  }
+};
 
 export const getUserAttributes = <T>(options: IOptions<T>, ldapAttributes: Attr[]) =>
   options.attributes.reduce((acc, curr) => {
