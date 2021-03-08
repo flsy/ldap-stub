@@ -1,6 +1,6 @@
 {
   "name": "ldap-stub",
-  "version": "0.0.12",
+  "version": "0.0.14",
   "description": "",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -23,7 +23,6 @@
     "format": "prettier --write \"src/**/*.ts\" --loglevel error",
     "lint": "eslint '*/**/*.{js,ts}' --quiet",
     "prepare": "yarn build",
-    "prepublishOnly": "yarn test && yarn lint",
     "preversion": "yarn lint",
     "version": "yarn format && git add -A src",
     "postversion": "git push && git push --tags",
