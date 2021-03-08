@@ -1,7 +1,8 @@
 import ldap from 'ldapjs';
 import { Attribute, Client, ClientOptions, SearchEntry, SearchOptions } from 'ldapjs';
-import { Either, Left, logger, notEmpty, Right } from './tools';
-import { IOptions } from './interfaces';
+import { logger, notEmpty } from './tools';
+import { ILdapConfig } from './interfaces';
+import { Either, isLeft, Left, Right, find, map, propEq, toArray } from 'fputils';
 
 export const getGroups = (values: string[]): string[] => {
   try {
@@ -54,23 +55,23 @@ export const getClient = (options: ClientOptions): Promise<Either<Error, Client>
     });
   });
 
-export const bind = (client: Client, username: string, password: string): Promise<void> =>
-  new Promise((resolve, reject) => {
+export const bind = (client: Client, username: string, password: string): Promise<Either<Error, void>> =>
+  new Promise((resolve) => {
     client.bind(username, password, (error) => {
       if (error) {
         logger('error', 'ldap bind', error.message);
-        return reject(error);
+        return resolve(Left(error));
       }
-      resolve();
+      resolve(Right(undefined));
     });
   });
 
-export const search = (client: Client, base: string, options: SearchOptions): Promise<SearchEntry[]> =>
-  new Promise((resolve, reject) => {
+export const search = (client: Client, base: string, options: SearchOptions): Promise<Either<Error, SearchEntry[]>> =>
+  new Promise((resolve) => {
     client.search(base, options, (error, result) => {
       if (error) {
         logger('error', 'ldap search', error.message);
-        return reject(error);
+        return resolve(Left(error));
       }
 
       const searchList: SearchEntry[] = [];
@@ -80,41 +81,46 @@ export const search = (client: Client, base: string, options: SearchOptions): Pr
       });
 
       result.on('error', (err) => {
+        // LDAP_NO_SUCH_OBJECT
+        if (err.code === 32) {
+          return resolve(Right([]));
+        }
         logger('error', 'ldap search error', err.message);
-        return reject(err);
+        return resolve(Left(err));
       });
 
       result.on('end', () => {
         logger('debug', 'ldap search end', base, 'results:', searchList.length);
-        resolve(searchList);
+        resolve(Right(searchList));
       });
     });
   });
 
+export const bindAndSearch = async (client: Client, config: ILdapConfig, options?: SearchOptions): Promise<Either<Error, SearchEntry[]>> => {
+  const bindResult = await bind(client, config.bindDN, config.bindPwd);
+  if (isLeft(bindResult)) {
+    logger('error', 'ldapService', bindResult.value.message);
+    return bindResult;
+  }
+
+  const results = await search(client, config.suffix, options);
+  if (isLeft(results)) {
+    return Left(new Error(`Search error: ${results.value.message}`));
+  }
+  return results;
+};
+
 type Attr = { type: string; vals: string[] };
-export const getAttributes = (attributes: Attribute[]): Attr[] => attributes.map((raw) => JSON.parse(raw.toString()));
+export const getAttributes = map<Attribute, Attr>((raw) => JSON.parse(raw.toString()));
 
 export const getAttribute = <T>(type: keyof T, attributes: Attr[]): string[] => {
-  const result = attributes.find((a) => a.type === type);
+  const result = find(propEq('type', type), attributes);
   return result ? result.vals : [];
 };
 
-export const getSearchResult = async (client, config, username, options): Promise<SearchEntry[]> => {
-  try {
-    return await search(client.value, config.suffix, {
-      filter: options.filter.split('{0}').join(username),
-      scope: options.scope,
-      attributes: options.attributes as string[],
-    });
-  } catch (error) {
-    logger('error', 'getSearchResult', error.message);
-    return [];
-  }
-};
-
-export const getUserAttributes = <T>(options: IOptions<T>, ldapAttributes: Attr[]) =>
-  options.attributes.reduce((acc, curr) => {
-    const attribute = getAttribute<T>(curr, ldapAttributes);
+export const getUserAttributes = (options: SearchOptions, ldapAttributes: Attr[]) =>
+  toArray(options.attributes).reduce((acc, curr) => {
+    const attribute = getAttribute(curr, ldapAttributes);
     if (attribute.length === 0) {
       return acc;
     }

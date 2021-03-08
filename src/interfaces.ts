@@ -1,4 +1,5 @@
-import { Either } from './tools';
+import { SearchOptions } from 'ldapjs';
+import { Maybe } from 'fputils';
 
 interface ILdapUserAccount {
   username: string;
@@ -43,32 +44,11 @@ export interface OpenLdapServerConfig extends ICommonConfig {
   accounts: Array<{ id: string; username: string; password: string }>;
 }
 
-export interface IOptions<T> {
-  filter: string;
-  attributes: Array<keyof T>;
-  scope?: 'sub' | 'one' | 'base';
-}
-
-export interface IMinimalAttributes {
-  distinguishedName: string[];
-}
-
 export interface ILdapService {
-  login: <T extends IMinimalAttributes>(username: string, password: string, options?: IOptions<T>) => Promise<Either<Error, T>>;
-  search: <T>(username: string, options: IOptions<T>) => Promise<Either<Error, T[]>>;
+  login: <T>(password: string, options?: SearchOptions) => Promise<Maybe<T>>;
+  search: <T>(options: SearchOptions) => Promise<Maybe<T[]>>;
 }
 
 export interface IOpenLdapService {
-  login: (username: string, password: string) => Promise<Either<Error, ILdapServiceAccount>>;
-}
-
-export interface ILdapUserResult {
-  distinguishedName: string[];
-  memberOf: string[];
-  givenName: string[];
-  sn: string[];
-  displayName: string[];
-  mail: string[];
-  telephoneNumber: string[];
-  userPrincipalName: string[];
+  login: (username: string, password: string) => Promise<Maybe<ILdapServiceAccount>>;
 }

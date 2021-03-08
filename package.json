@@ -30,7 +30,7 @@
     "verify": "yarn format && yarn lint && yarn test && yarn build"
   },
   "dependencies": {
-    "@types/ldapjs": "^1.0.8",
+    "fputils": "^1.1.4",
     "ldapjs": "^1.0.2"
   },
   "devDependencies": {
@@ -38,6 +38,7 @@
     "@babel/preset-env": "^7.11.0",
     "@babel/preset-typescript": "^7.10.4",
     "@types/jest": "^26.0.9",
+    "@types/ldapjs": "^1.0.9",
     "@typescript-eslint/eslint-plugin": "^4.5.0",
     "@typescript-eslint/parser": "^4.5.0",
     "babel-jest": "^26.3.0",
