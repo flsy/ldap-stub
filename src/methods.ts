@@ -126,3 +126,16 @@ export const getUserAttributes = (options: SearchOptions, ldapAttributes: Attr[]
     }
     return { ...acc, [curr]: attribute };
   }, {});
+
+export const searchResult = (entries: SearchEntry[], attributes: SearchOptions['attributes']): Array<{ [key: string]: Attr }> =>
+  entries.map((r) => {
+    const attrs = getAttributes(r.attributes);
+
+    return toArray(attributes).reduce((all, current) => {
+      const value = attrs.find((a) => a.type === current);
+
+      if (!value.vals) return all;
+
+      return { ...all, [current]: value.vals };
+    }, {});
+  });

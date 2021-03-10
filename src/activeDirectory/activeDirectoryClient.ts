@@ -1,8 +1,7 @@
-import { bind, bindAndSearch, getAttribute, getAttributes, getClient, getUserAttributes } from '../methods';
+import { bind, bindAndSearch, searchResult, getAttribute, getAttributes, getClient, getUserAttributes } from '../methods';
 import { ILdapConfig, ILdapService } from '../interfaces';
 import { logger } from '../tools';
-import { SearchEntry, SearchOptions } from 'ldapjs';
-import { Maybe, isLeft, Left, Right, head, toArray } from 'fputils';
+import { Maybe, isLeft, Left, Right, head } from 'fputils';
 
 export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
   login: async <T>(password, options): Promise<Maybe<T>> => {
@@ -57,19 +56,6 @@ export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
       return Right([]);
     }
 
-    return Right(cleanAttributes(results.value, options.attributes));
+    return Right(searchResult(results.value, options.attributes));
   },
 });
-
-const cleanAttributes = (entries: SearchEntry[], attributes: SearchOptions['attributes']): Array<{ [key: string]: Attr }> =>
-  entries.map((r) => {
-    const attrs = getAttributes(r.attributes);
-
-    return toArray(attributes).reduce((all, current) => {
-      const value = attrs.find((a) => a.type === current);
-
-      if (!value.vals) return all;
-
-      return { ...all, [current]: value.vals };
-    }, {});
-  });
