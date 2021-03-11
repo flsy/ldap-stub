@@ -1,6 +1,6 @@
 import { openLdapServerMock } from '../testHelpers';
 import { IOpenLdapConfig, OpenLdapServerConfig } from '../../interfaces';
-import { isLeft, isRight } from '../../tools';
+import { isLeft, isRight } from 'fputils';
 import { openLdapClient } from '../openLdapClient';
 
 const account = { id: '9000', username: 'service_1', password: 'password' };

@@ -1,6 +1,6 @@
 import ldap from 'ldapjs';
-import { Optional } from '../tools';
 import { IUser } from '../interfaces';
+import { Optional } from 'fputils';
 
 type DNType = 'DC=' | 'CN=' | 'OU=';
 type Attribute = 'userprincipalname' | 'samaccountname';
@@ -83,13 +83,13 @@ export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: st
   server.search(adArgs.suffix, authorize, (req: any, res: any, next: any) => {
     const dn = req.dn.toString();
 
+    // todo: dont always want to search by username
     const username = getUsername(req.filter.toString());
     logger('info', 'search for:', username);
 
     const user = adArgs.users.find((u) => u.username === username);
-
-    logger('info', 'search for:', username);
     if (!user) {
+      logger('info', 'no search result for', username);
       return next(new ldap.NoSuchObjectError(dn));
     }
 

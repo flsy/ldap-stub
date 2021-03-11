@@ -1,6 +1,7 @@
 import ldap from 'ldapjs';
-import { logger, Optional } from '../tools';
+import { logger } from '../tools';
 import { OpenLdapServerConfig } from '../interfaces';
+import { Optional } from 'fputils';
 
 const parseUsername = (cn: string): Optional<string> => {
   const a = cn
