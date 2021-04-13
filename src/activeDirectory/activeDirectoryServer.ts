@@ -1,4 +1,4 @@
-import ldap from 'ldapjs';
+import ldap, { parseFilter } from 'ldapjs';
 import { IUser } from '../interfaces';
 import { Optional } from 'fputils';
 
@@ -80,11 +80,20 @@ export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: st
     return result;
   };
 
+  const getFilter = (req: any): string => {
+    const filter = req.filter.toString();
+
+    if (filter.includes('*')) {
+      return filter.split('*').join('');
+    }
+    return filter;
+  };
+
   server.search(adArgs.suffix, authorize, (req: any, res: any, next: any) => {
     const dn = req.dn.toString();
 
     // todo: dont always want to search by username
-    const username = getUsername(req.filter.toString());
+    const username = getUsername(getFilter(req));
     logger('info', 'search for:', username);
 
     const user = adArgs.users.find((u) => u.username === username);

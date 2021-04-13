@@ -28,6 +28,26 @@ describe('active directory', () => {
       expect(result.value).toEqual(new ldap.InvalidCredentialsError());
     });
 
+    it('returns user details when all goes right using partial search filter (sAMAccountName=*user*)', async () => {
+      const server = await serverMock(1234, ldapMockSettings(), user);
+      const result = await activeDirectoryClient(ldapMockSettings()).login(
+        user.password,
+        optionsMock({ filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=*${user.username}*))` }),
+      );
+      await server.close();
+
+      expect(isRight(result)).toEqual(true);
+      expect(result.value).toEqual({
+        distinguishedName: ['CN=John Snow,CN=Users,DC=example,DC=com'],
+        mail: ['joe@email'],
+        telephoneNumber: ['123456789'],
+        givenName: ['John'],
+        sn: ['Snow'],
+        memberOf: ['CN=Admins,CN=Groups,DC=example,DC=com', 'CN=Audit,CN=Groups,DC=example,DC=com'],
+        userPrincipalName: ['user@example.com'],
+      });
+    });
+
     it('returns user details when all goes right', async () => {
       const server = await serverMock(1234, ldapMockSettings(), user);
       const result = await activeDirectoryClient(ldapMockSettings()).login(
