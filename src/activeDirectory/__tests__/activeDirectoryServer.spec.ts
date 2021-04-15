@@ -28,26 +28,6 @@ describe('active directory', () => {
       expect(result.value).toEqual(new ldap.InvalidCredentialsError());
     });
 
-    it('returns user details when all goes right using partial search filter (sAMAccountName=*user*)', async () => {
-      const server = await serverMock(1234, ldapMockSettings(), user);
-      const result = await activeDirectoryClient(ldapMockSettings()).login(
-        user.password,
-        optionsMock({ filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=*${user.username}*))` }),
-      );
-      await server.close();
-
-      expect(isRight(result)).toEqual(true);
-      expect(result.value).toEqual({
-        distinguishedName: ['CN=John Snow,CN=Users,DC=example,DC=com'],
-        mail: ['joe@email'],
-        telephoneNumber: ['123456789'],
-        givenName: ['John'],
-        sn: ['Snow'],
-        memberOf: ['CN=Admins,CN=Groups,DC=example,DC=com', 'CN=Audit,CN=Groups,DC=example,DC=com'],
-        userPrincipalName: ['user@example.com'],
-      });
-    });
-
     it('returns user details when all goes right', async () => {
       const server = await serverMock(1234, ldapMockSettings(), user);
       const result = await activeDirectoryClient(ldapMockSettings()).login(
@@ -130,6 +110,124 @@ describe('active directory', () => {
       const result = await activeDirectoryClient(ldapMockSettings()).search(
         optionsMock({ filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=${user.username}))` }),
       );
+      await server.close();
+
+      expect(isRight(result)).toEqual(true);
+      expect(result.value).toEqual([
+        {
+          distinguishedName: ['CN=John Snow,CN=Users,DC=example,DC=com'],
+          givenName: ['John'],
+          mail: ['joe@email'],
+          memberOf: ['CN=Admins,CN=Groups,DC=example,DC=com', 'CN=Audit,CN=Groups,DC=example,DC=com'],
+          sn: ['Snow'],
+          telephoneNumber: ['123456789'],
+          userPrincipalName: ['user@example.com'],
+        },
+      ]);
+    });
+
+    it('should search for user in Active Directory server with search filter: *user', async () => {
+      const server = await serverMock(1234, ldapMockSettings(), user);
+      const result = await activeDirectoryClient(ldapMockSettings()).search(
+        optionsMock({ filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=*${user.username}))` }),
+      );
+      await server.close();
+
+      expect(isRight(result)).toEqual(true);
+      expect(result.value).toEqual([
+        {
+          distinguishedName: ['CN=John Snow,CN=Users,DC=example,DC=com'],
+          givenName: ['John'],
+          mail: ['joe@email'],
+          memberOf: ['CN=Admins,CN=Groups,DC=example,DC=com', 'CN=Audit,CN=Groups,DC=example,DC=com'],
+          sn: ['Snow'],
+          telephoneNumber: ['123456789'],
+          userPrincipalName: ['user@example.com'],
+        },
+      ]);
+    });
+
+    it('should search for user in Active Directory server with search filter: *user*', async () => {
+      const server = await serverMock(1234, ldapMockSettings(), user);
+      const result = await activeDirectoryClient(ldapMockSettings()).search(
+        optionsMock({ filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=*${user.username}*))` }),
+      );
+      await server.close();
+
+      expect(isRight(result)).toEqual(true);
+      expect(result.value).toEqual([
+        {
+          distinguishedName: ['CN=John Snow,CN=Users,DC=example,DC=com'],
+          givenName: ['John'],
+          mail: ['joe@email'],
+          memberOf: ['CN=Admins,CN=Groups,DC=example,DC=com', 'CN=Audit,CN=Groups,DC=example,DC=com'],
+          sn: ['Snow'],
+          telephoneNumber: ['123456789'],
+          userPrincipalName: ['user@example.com'],
+        },
+      ]);
+    });
+
+    it('should search for user in Active Directory server with search filter: *ser', async () => {
+      const server = await serverMock(1234, ldapMockSettings(), user);
+      const result = await activeDirectoryClient(ldapMockSettings()).search(optionsMock({ filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=*ser))` }));
+      await server.close();
+
+      expect(isRight(result)).toEqual(true);
+      expect(result.value).toEqual([
+        {
+          distinguishedName: ['CN=John Snow,CN=Users,DC=example,DC=com'],
+          givenName: ['John'],
+          mail: ['joe@email'],
+          memberOf: ['CN=Admins,CN=Groups,DC=example,DC=com', 'CN=Audit,CN=Groups,DC=example,DC=com'],
+          sn: ['Snow'],
+          telephoneNumber: ['123456789'],
+          userPrincipalName: ['user@example.com'],
+        },
+      ]);
+    });
+
+    it('should search for user in Active Directory server with search filter: *s*', async () => {
+      const server = await serverMock(1234, ldapMockSettings(), user);
+      const result = await activeDirectoryClient(ldapMockSettings()).search(optionsMock({ filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=*s*))` }));
+      await server.close();
+
+      expect(isRight(result)).toEqual(true);
+      expect(result.value).toEqual([
+        {
+          distinguishedName: ['CN=John Snow,CN=Users,DC=example,DC=com'],
+          givenName: ['John'],
+          mail: ['joe@email'],
+          memberOf: ['CN=Admins,CN=Groups,DC=example,DC=com', 'CN=Audit,CN=Groups,DC=example,DC=com'],
+          sn: ['Snow'],
+          telephoneNumber: ['123456789'],
+          userPrincipalName: ['user@example.com'],
+        },
+      ]);
+    });
+
+    it('should search for user in Active Directory server with search filter: us*', async () => {
+      const server = await serverMock(1234, ldapMockSettings(), user);
+      const result = await activeDirectoryClient(ldapMockSettings()).search(optionsMock({ filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=us*))` }));
+      await server.close();
+
+      expect(isRight(result)).toEqual(true);
+      expect(result.value).toEqual([
+        {
+          distinguishedName: ['CN=John Snow,CN=Users,DC=example,DC=com'],
+          givenName: ['John'],
+          mail: ['joe@email'],
+          memberOf: ['CN=Admins,CN=Groups,DC=example,DC=com', 'CN=Audit,CN=Groups,DC=example,DC=com'],
+          sn: ['Snow'],
+          telephoneNumber: ['123456789'],
+          userPrincipalName: ['user@example.com'],
+        },
+      ]);
+    });
+
+    it('should search for user in Active Directory server with search filter: *s*', async () => {
+      const server = await serverMock(1234, ldapMockSettings(), user);
+      const result = await activeDirectoryClient(ldapMockSettings()).search(optionsMock({ filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=*s*))` }));
       await server.close();
 
       expect(isRight(result)).toEqual(true);
