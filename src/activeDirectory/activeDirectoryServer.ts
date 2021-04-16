@@ -80,6 +80,8 @@ export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: st
     return result;
   };
 
+  const findUser = (users: IUser[], username: string) => users.find((u) => new RegExp(`^${username.replace(/\*/g, '.*')}$`).test(u.username));
+
   server.search(adArgs.suffix, authorize, (req: any, res: any, next: any) => {
     const dn = req.dn.toString();
 
@@ -87,7 +89,8 @@ export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: st
     const username = getUsername(req.filter.toString());
     logger('info', 'search for:', username);
 
-    const user = adArgs.users.find((u) => u.username === username);
+    const user = findUser(adArgs.users, username);
+
     if (!user) {
       logger('info', 'no search result for', username);
       return next(new ldap.NoSuchObjectError(dn));
