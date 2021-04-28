@@ -1,0 +1,16 @@
+version: "3.3"
+services:
+  stub-ldap:
+    image: stub-ldap
+    build:
+      context: .
+    environment:
+      LDAP_PORT: 389
+      LDAP_BIND_DN: CN=Administrator,CN=Users,DC=example,DC=local
+      LDAP_BIND_PASSWORD: Some+Bind+Pw123!
+      LDAP_SUFFIX: DC=example,DC=local
+      LDAP_DOMAIN: example.local
+      LDAP_USERS_BASE_DN: CN=Users,DC=example,DC=local
+      LDAP_USERS: "[{\"username\":\"user\",\"password\":\"password\",\"givenName\":\"John\",\"sn\":\"Snow\",\"displayName\":\"SNOW John\",\"mail\":\"john.snow@example.local\",\"telephoneNumber\":\"111 222 333\",\"memberOf\":[\"CN=Admins,OU=Groups,DC=example,DC=local\", \"CN=All,OU=Groups,DC=example,DC=local\"],\"userPrincipalName\":\"user@example.local\"},{\"username\":\"arya\",\"password\":\"password\",\"givenName\":\"Arya\",\"sn\":\"Stark\",\"displayName\":\"STARK Arya\",\"mail\":\"arya.stark@example.local\",\"telephoneNumber\":\"456789123\",\"memberOf\":[\"CN=Marketing,OU=Groups,DC=example,DC=local\", \"CN=All,OU=Groups,DC=example,DC=local\"],\"userPrincipalName\":\"arya@example.local\"}]"
+    ports:
+      - 389:389
