@@ -1,7 +1,6 @@
 # ldap-stub
 
 
-
 ## example usage
 ## Active Directory
 
