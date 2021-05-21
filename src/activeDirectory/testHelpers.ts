@@ -1,11 +1,7 @@
-import { ILdapConfig, IUser } from '../interfaces';
+import { ILdapConfig } from '../interfaces';
 import { ActiveDirectoryServer } from './activeDirectoryServer';
 
-export const serverMock = (
-  port: number,
-  config: ILdapConfig,
-  { sn, givenName, userPrincipalName, memberOf, telephoneNumber, username, password, mail }: IUser,
-): Promise<{ close: () => void }> =>
+export const serverMock = (port: number, config: ILdapConfig): Promise<{ close: () => void }> =>
   new Promise((resolve) => {
     const server = ActiveDirectoryServer({
       logger: console.log,
@@ -13,18 +9,6 @@ export const serverMock = (
       bindDN: config.bindDN,
       bindPassword: config.bindPwd,
       usersBaseDN: config.usersBaseDN,
-      users: [
-        {
-          givenName,
-          sn,
-          password,
-          username,
-          memberOf,
-          telephoneNumber,
-          mail,
-          userPrincipalName,
-        },
-      ],
     });
 
     server.listen(port, () => {
@@ -38,3 +22,5 @@ export const serverMock = (
       });
     });
   });
+
+export const setUserConfigFileEnv = () => (process.env['USERS_CONFIG_FILE'] = 'src/activeDirectory/__tests__/__mocks__/mockUsers.json');

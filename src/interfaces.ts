@@ -52,3 +52,11 @@ export interface ILdapService {
 export interface IOpenLdapService {
   login: (username: string, password: string) => Promise<Maybe<ILdapServiceAccount>>;
 }
+
+export interface ActiveDirectoryServerArgs {
+  bindDN: string;
+  bindPassword: string;
+  suffix: string;
+  usersBaseDN: string;
+  logger?: (...args: any[]) => void;
+}
