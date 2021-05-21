@@ -40,7 +40,7 @@ export const ActiveDirectoryServer = (adArgs: ActiveDirectoryServerArgs) => {
     const users = getUsers();
 
     if (isLeft(users)) {
-      return next(new ldap.InvalidCredentialsError(users.value.message));
+      return next(new Error(users.value.message));
     }
 
     const user = users.value.find((u) => {
@@ -98,7 +98,7 @@ export const ActiveDirectoryServer = (adArgs: ActiveDirectoryServerArgs) => {
     const users = getUsers();
 
     if (isLeft(users)) {
-      return next(new ldap.InvalidCredentialsError(users.value.message));
+      return next(new Error(users.value.message));
     }
 
     const user = findUser(users.value, username);

@@ -1,5 +1,5 @@
 import { SearchOptions } from 'ldapjs';
-import { IUser } from './interfaces';
+import { ILdapConfig, IUser } from './interfaces';
 
 export const user: IUser = {
   password: 'password',
@@ -18,4 +18,14 @@ export const optionsMock = (imperatives?: Partial<SearchOptions>): SearchOptions
   scope: 'sub',
   attributes: ['distinguishedName', 'memberOf', 'givenName', 'sn', 'mail', 'telephoneNumber', 'userPrincipalName'],
   ...imperatives,
+});
+
+// TODO - from function to const
+export const ldapMockSettings = (imperative?: Partial<ILdapConfig>): ILdapConfig => ({
+  serverUrl: 'ldap://0.0.0.0:1234',
+  suffix: 'DC=example, DC=com',
+  usersBaseDN: 'CN=Users,DC=example,DC=com',
+  bindDN: 'CN=Administrator,CN=Users,DC=example,DC=com',
+  bindPwd: 'ldap-password',
+  ...imperative,
 });

@@ -11,9 +11,9 @@ export const logger = (type: 'info' | 'error' | 'debug', ...args: any[]) => cons
 
 export const notEmpty = <TValue>(value: TValue | null | undefined): value is TValue => value !== null && value !== undefined;
 
-export const parseJson = (content: string): Maybe<IUser[]> => {
+export const parseJson = (content?: string): Maybe<IUser[]> => {
   try {
-    return Right(JSON.parse(content));
+    return content && Right(JSON.parse(content.trim()));
   } catch (e) {
     return Left(e);
   }
@@ -28,7 +28,7 @@ const parseUsers = (ldapUsersEnv?: string, usersConfigFileEnv?: string): ParseUs
     return { users: parseJson(fs.readFileSync(usersConfigFileEnv, { encoding: 'utf8' })), logMessage: 'Failed to parse USERS_CONFIG_FILE file.' };
   }
 
-  return { users: parseJson(ldapUsersEnv.trim()), logMessage: 'Failed to parse users from environment variable LDAP_USERS' };
+  return { users: parseJson(ldapUsersEnv), logMessage: 'Failed to parse users from environment variable LDAP_USERS' };
 };
 
 export const getUsers = (): Maybe<IUser[]> => {
@@ -36,8 +36,8 @@ export const getUsers = (): Maybe<IUser[]> => {
   const usersConfigFileEnv = process.env['USERS_CONFIG_FILE'];
 
   if (!isUserConfigEnvSet(ldapUsersEnv, usersConfigFileEnv)) {
-    logger('error', 'LDAP_USERS neither USERS_CONFIG_FILE environment variable set!');
-    return Left(new Error('No users configuration used'));
+    logger('info', 'LDAP_USERS neither USERS_CONFIG_FILE environment variable set.');
+    return Right([]);
   }
 
   const { users, logMessage } = parseUsers(ldapUsersEnv, usersConfigFileEnv);
@@ -49,7 +49,7 @@ export const getUsers = (): Maybe<IUser[]> => {
 
   if (!Array.isArray(users.value)) {
     logger('error', 'User configuration is not array.');
-    return Left(new Error(`Users configuration is not array. Used: ${JSON.stringify(users)}`));
+    return Left(new Error(`Users configuration is not array. Received: ${JSON.stringify(users.value)}`));
   }
 
   return users;

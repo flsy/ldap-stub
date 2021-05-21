@@ -1,132 +1,10 @@
 import ldap from 'ldapjs';
 import { serverMock, setUserConfigFileEnv } from '../testHelpers';
-import { ILdapConfig } from '../../interfaces';
 import { activeDirectoryClient } from '../activeDirectoryClient';
-import { optionsMock, user } from '../../mocks';
+import { ldapMockSettings, optionsMock, user } from '../../mocks';
 import { isLeft, isRight } from 'fputils';
 
-const ldapMockSettings = (imperative?: Partial<ILdapConfig>): ILdapConfig => ({
-  serverUrl: 'ldap://0.0.0.0:1234',
-  suffix: 'DC=example, DC=com',
-  usersBaseDN: 'CN=Users,DC=example,DC=com',
-  bindDN: 'CN=Administrator,CN=Users,DC=example,DC=com',
-  bindPwd: 'ldap-password',
-  ...imperative,
-});
-
 describe('active directory', () => {
-  describe('different user configs for server', () => {
-    beforeEach(() => {
-      process.env['USERS_CONFIG_FILE'] = '';
-      process.env['LDAP_USERS'] = '';
-    });
-
-    it('Fails when no ENV with users configured', async () => {
-      const server = await serverMock(1234, ldapMockSettings());
-      const search = await activeDirectoryClient(ldapMockSettings()).search(optionsMock());
-      await server.close();
-
-      expect(isLeft(search)).toEqual(true);
-      expect(search.value).toEqual(Error('Search error: No users configuration used'));
-    });
-
-    it('should load []', async () => {
-      process.env['LDAP_USERS'] = JSON.stringify([]);
-      const server = await serverMock(1234, ldapMockSettings());
-
-      const result = await activeDirectoryClient(ldapMockSettings()).search(optionsMock({ filter: '(sn=*)' }));
-      await server.close();
-
-      expect(isRight(result)).toEqual(true);
-      expect(result.value).toEqual([]);
-    });
-
-    it('fail to load wrong format', async () => {
-      process.env['LDAP_USERS'] = '{}';
-      const server = await serverMock(1234, ldapMockSettings());
-      const search = await activeDirectoryClient(ldapMockSettings()).search(optionsMock({ filter: '(mail=*)' }));
-      await server.close();
-
-      expect(isLeft(search)).toEqual(true);
-      expect(search.value).toEqual(Error('Search error: Users configuration is not array. Used: {"value":{},"tag":"right"}'));
-    });
-
-    it('should load user config from file', async () => {
-      setUserConfigFileEnv();
-
-      const server = await serverMock(1234, ldapMockSettings());
-      const search = await activeDirectoryClient(ldapMockSettings()).search(optionsMock({ filter: '(sAMAccountName=*)' }));
-      await server.close();
-
-      expect(isRight(search)).toEqual(true);
-      expect(search.value).toEqual([
-        {
-          distinguishedName: ['CN=John Snow,CN=Users,DC=example,DC=com'],
-          givenName: ['John'],
-          mail: ['joe@email'],
-          memberOf: ['CN=Admins,CN=Groups,DC=example,DC=com', 'CN=Audit,CN=Groups,DC=example,DC=com'],
-          sn: ['Snow'],
-          telephoneNumber: ['123456789'],
-          userPrincipalName: ['user@example.com'],
-        },
-      ]);
-    });
-
-    it('should load user config from environment variable LDAP_USERS', async () => {
-      process.env['LDAP_USERS'] = JSON.stringify([
-        {
-          password: 'x',
-          username: 'x',
-          mail: 'x@x',
-          telephoneNumber: 'x',
-          givenName: 'x',
-          sn: 'x',
-          displayName: 'x x',
-          memberOf: [''],
-          userPrincipalName: 'x@x',
-        },
-      ]);
-
-      const server = await serverMock(1234, ldapMockSettings());
-      const search = await activeDirectoryClient(ldapMockSettings()).search(optionsMock({ filter: '(sAMAccountName=*)' }));
-      await server.close();
-
-      expect(isRight(search)).toEqual(true);
-      expect(search.value).toEqual([
-        {
-          distinguishedName: ['CN=x x,CN=Users,DC=example,DC=com'],
-          givenName: ['x'],
-          mail: ['x@x'],
-          memberOf: [''],
-          sn: ['x'],
-          telephoneNumber: ['x'],
-          userPrincipalName: ['x@x'],
-        },
-      ]);
-    });
-
-    it('should prefer USERS_CONFIG_FILE', async () => {
-      setUserConfigFileEnv();
-      process.env['LDAP_USERS'] = JSON.stringify([
-        {
-          username: 'x',
-          userPrincipalName: 'x@x',
-        },
-      ]);
-
-      const server = await serverMock(1234, ldapMockSettings());
-      const search = await activeDirectoryClient(ldapMockSettings()).search(optionsMock({ filter: '(sAMAccountName=*)' }));
-      await server.close();
-
-      if (isLeft(search)) {
-        fail('Failed to get users');
-      }
-
-      expect(search.value.length).toEqual(1);
-      expect(search.value[0]).toMatchObject({ userPrincipalName: ['user@example.com'] });
-    });
-  });
-
   describe('login', () => {
     beforeAll(() => {
       setUserConfigFileEnv();
@@ -218,7 +96,7 @@ describe('active directory', () => {
 
     it('should return [] when no user found', async () => {
       const server = await serverMock(1234, ldapMockSettings());
-      const result = await activeDirectoryClient(ldapMockSettings()).search(optionsMock({ filter: '(&(objectCategory=person)(objectClass=user)(sAMAccountName=arya))' }));
+      const result = await activeDirectoryClient(ldapMockSettings()).search(optionsMock({ filter: '(&(objectCategory=person)(objectClass=user)(sAMAccountName=xx))' }));
       await server.close();
 
       expect(isRight(result)).toEqual(true);
