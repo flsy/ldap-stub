@@ -52,7 +52,7 @@ describe('methods test suite', () => {
 
   describe('getUserAttributes function', () => {
     it('should return empty object when wrong attribute passed in', () => {
-      const result = getUserAttributes(optionsMock(), [
+      const result = getUserAttributes(optionsMock, [
         {
           type: 'wrongAttribute',
           vals: ['CN=John Snow,OU=Users,DC=example, DC=com'],
@@ -63,7 +63,7 @@ describe('methods test suite', () => {
     });
 
     it('should return partial result', () => {
-      const result = getUserAttributes(optionsMock(), [
+      const result = getUserAttributes(optionsMock, [
         {
           type: 'wrongAttribute',
           vals: ['CN=John Snow,CN=Users,DC=example, DC=com'],
@@ -75,7 +75,7 @@ describe('methods test suite', () => {
     });
 
     it('should return ldap attributes using OU=Users in DN', () => {
-      const result = getUserAttributes(optionsMock(), ldapAttributesMock);
+      const result = getUserAttributes(optionsMock, ldapAttributesMock);
 
       expect(result).toEqual({
         distinguishedName: ['CN=John Snow,OU=Users,DC=example, DC=com'],
@@ -89,7 +89,7 @@ describe('methods test suite', () => {
     });
 
     it('should return ldap attributes using CN=Users in DN', () => {
-      const result = getUserAttributes(optionsMock(), [
+      const result = getUserAttributes(optionsMock, [
         {
           type: 'distinguishedName',
           vals: ['CN=John Snow,OU=Users,DC=example, DC=com'],

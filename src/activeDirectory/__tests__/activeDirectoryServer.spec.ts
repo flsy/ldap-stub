@@ -11,11 +11,11 @@ describe('active directory', () => {
     });
 
     it('returns error when provided user credentials are incorrect', async () => {
-      const server = await serverMock(1234, ldapMockSettings());
-      const result = await activeDirectoryClient(ldapMockSettings()).login(
-        'xx',
-        optionsMock({ filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=${user.username}))` }),
-      );
+      const server = await serverMock(1234, ldapMockSettings);
+      const result = await activeDirectoryClient(ldapMockSettings).login('xx', {
+        ...optionsMock,
+        filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=${user.username}))`,
+      });
       await server.close();
 
       expect(isLeft(result)).toEqual(true);
@@ -23,11 +23,11 @@ describe('active directory', () => {
     });
 
     it('returns user details when all goes right', async () => {
-      const server = await serverMock(1234, ldapMockSettings());
-      const result = await activeDirectoryClient(ldapMockSettings()).login(
-        user.password,
-        optionsMock({ filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=${user.username}))` }),
-      );
+      const server = await serverMock(1234, ldapMockSettings);
+      const result = await activeDirectoryClient(ldapMockSettings).login(user.password, {
+        ...optionsMock,
+        filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=${user.username}))`,
+      });
       await server.close();
 
       expect(isRight(result)).toEqual(true);
@@ -43,15 +43,16 @@ describe('active directory', () => {
     });
 
     it('returns user details when all goes right with different AD structure', async () => {
-      const serverMockSettings = ldapMockSettings({
+      const serverMockSettings = {
+        ...ldapMockSettings,
         usersBaseDN: 'OU=Users,OU=Marketing,OU=Divisions,DC=example,DC=com',
         bindDN: 'CN=Domain Admin,OU=Users,OU=Marketing,OU=Divisions,DC=example,DC=com',
-      });
+      };
       const server = await serverMock(1234, serverMockSettings);
-      const result = await activeDirectoryClient(serverMockSettings).login(
-        user.password,
-        optionsMock({ filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=${user.username}))` }),
-      );
+      const result = await activeDirectoryClient(serverMockSettings).login(user.password, {
+        ...optionsMock,
+        filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=${user.username}))`,
+      });
       await server.close();
 
       expect(isRight(result)).toEqual(true);
@@ -67,13 +68,8 @@ describe('active directory', () => {
     });
 
     it('returns user details when all goes right with userPrincipalName', async () => {
-      const server = await serverMock(1234, ldapMockSettings());
-      const result = await activeDirectoryClient(ldapMockSettings()).login(
-        user.password,
-        optionsMock({
-          filter: '(&(objectcategory=user)(userPrincipalName=user@example.com))',
-        }),
-      );
+      const server = await serverMock(1234, ldapMockSettings);
+      const result = await activeDirectoryClient(ldapMockSettings).login(user.password, { ...optionsMock, filter: '(&(objectcategory=user)(userPrincipalName=user@example.com))' });
       await server.close();
 
       expect(isRight(result)).toEqual(true);
@@ -95,8 +91,8 @@ describe('active directory', () => {
     });
 
     it('should return [] when no user found', async () => {
-      const server = await serverMock(1234, ldapMockSettings());
-      const result = await activeDirectoryClient(ldapMockSettings()).search(optionsMock({ filter: '(&(objectCategory=person)(objectClass=user)(sAMAccountName=xx))' }));
+      const server = await serverMock(1234, ldapMockSettings);
+      const result = await activeDirectoryClient(ldapMockSettings).search({ ...optionsMock, filter: '(&(objectCategory=person)(objectClass=user)(sAMAccountName=xx))' });
       await server.close();
 
       expect(isRight(result)).toEqual(true);
@@ -104,10 +100,11 @@ describe('active directory', () => {
     });
 
     it('should search for user in Active Directory server', async () => {
-      const server = await serverMock(1234, ldapMockSettings());
-      const result = await activeDirectoryClient(ldapMockSettings()).search(
-        optionsMock({ filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=${user.username}))` }),
-      );
+      const server = await serverMock(1234, ldapMockSettings);
+      const result = await activeDirectoryClient(ldapMockSettings).search({
+        ...optionsMock,
+        filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=${user.username}))`,
+      });
       await server.close();
 
       expect(isRight(result)).toEqual(true);
@@ -125,10 +122,11 @@ describe('active directory', () => {
     });
 
     it('should search for user in Active Directory server with search filter: *user', async () => {
-      const server = await serverMock(1234, ldapMockSettings());
-      const result = await activeDirectoryClient(ldapMockSettings()).search(
-        optionsMock({ filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=*${user.username}))` }),
-      );
+      const server = await serverMock(1234, ldapMockSettings);
+      const result = await activeDirectoryClient(ldapMockSettings).search({
+        ...optionsMock,
+        filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=*${user.username}))`,
+      });
       await server.close();
 
       expect(isRight(result)).toEqual(true);
@@ -146,10 +144,11 @@ describe('active directory', () => {
     });
 
     it('should search for user in Active Directory server with search filter: *user*', async () => {
-      const server = await serverMock(1234, ldapMockSettings());
-      const result = await activeDirectoryClient(ldapMockSettings()).search(
-        optionsMock({ filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=*${user.username}*))` }),
-      );
+      const server = await serverMock(1234, ldapMockSettings);
+      const result = await activeDirectoryClient(ldapMockSettings).search({
+        ...optionsMock,
+        filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=*${user.username}*))`,
+      });
       await server.close();
 
       expect(isRight(result)).toEqual(true);
@@ -167,8 +166,8 @@ describe('active directory', () => {
     });
 
     it('should search for user in Active Directory server with search filter: *ser', async () => {
-      const server = await serverMock(1234, ldapMockSettings());
-      const result = await activeDirectoryClient(ldapMockSettings()).search(optionsMock({ filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=*ser))` }));
+      const server = await serverMock(1234, ldapMockSettings);
+      const result = await activeDirectoryClient(ldapMockSettings).search({ ...optionsMock, filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=*ser))` });
       await server.close();
 
       expect(isRight(result)).toEqual(true);
@@ -186,8 +185,8 @@ describe('active directory', () => {
     });
 
     it('should search for user in Active Directory server with search filter: *s*', async () => {
-      const server = await serverMock(1234, ldapMockSettings());
-      const result = await activeDirectoryClient(ldapMockSettings()).search(optionsMock({ filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=*s*))` }));
+      const server = await serverMock(1234, ldapMockSettings);
+      const result = await activeDirectoryClient(ldapMockSettings).search({ ...optionsMock, filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=*s*))` });
       await server.close();
 
       expect(isRight(result)).toEqual(true);
@@ -205,8 +204,8 @@ describe('active directory', () => {
     });
 
     it('should search for user in Active Directory server with search filter: us*', async () => {
-      const server = await serverMock(1234, ldapMockSettings());
-      const result = await activeDirectoryClient(ldapMockSettings()).search(optionsMock({ filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=us*))` }));
+      const server = await serverMock(1234, ldapMockSettings);
+      const result = await activeDirectoryClient(ldapMockSettings).search({ ...optionsMock, filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=us*))` });
       await server.close();
 
       expect(isRight(result)).toEqual(true);
@@ -224,8 +223,8 @@ describe('active directory', () => {
     });
 
     it('should search for user in Active Directory server with search filter: *s*', async () => {
-      const server = await serverMock(1234, ldapMockSettings());
-      const result = await activeDirectoryClient(ldapMockSettings()).search(optionsMock({ filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=*s*))` }));
+      const server = await serverMock(1234, ldapMockSettings);
+      const result = await activeDirectoryClient(ldapMockSettings).search({ ...optionsMock, filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=*s*))` });
       await server.close();
 
       expect(isRight(result)).toEqual(true);
@@ -243,13 +242,12 @@ describe('active directory', () => {
     });
 
     it('should search for user in Active Directory server and returns only memberOf attribute', async () => {
-      const server = await serverMock(1234, ldapMockSettings());
-      const result = await activeDirectoryClient(ldapMockSettings()).search(
-        optionsMock({
-          attributes: ['memberOf'],
-          filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=${user.username}))`,
-        }),
-      );
+      const server = await serverMock(1234, ldapMockSettings);
+      const result = await activeDirectoryClient(ldapMockSettings).search({
+        ...optionsMock,
+        attributes: ['memberOf'],
+        filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=${user.username}))`,
+      });
       await server.close();
 
       expect(isRight(result)).toEqual(true);
