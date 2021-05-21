@@ -1,6 +1,7 @@
 import ldap from 'ldapjs';
-import { IUser } from '../interfaces';
-import { Optional } from 'fputils';
+import { ActiveDirectoryServerArgs, IUser } from '../interfaces';
+import { isLeft, Optional } from 'fputils';
+import { getUsers } from '../tools';
 
 type DNType = 'DC=' | 'CN=' | 'OU=';
 type Attribute = 'userprincipalname' | 'samaccountname';
@@ -16,7 +17,7 @@ const lowerDnBit = (dnBit: string) => {
 
 const lowercaseDn = (suffix: string) => suffix.split(',').map(lowerDnBit).join(', ');
 
-export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: string; suffix: string; users: IUser[]; usersBaseDN: string; logger?: (...args: any[]) => void }) => {
+export const ActiveDirectoryServer = (adArgs: ActiveDirectoryServerArgs) => {
   const server = ldap.createServer();
 
   const logger = adArgs.logger ? adArgs.logger : () => null;
@@ -36,8 +37,13 @@ export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: st
   server.bind(adArgs.suffix, (req: any, res: any, next: any) => {
     const dn = req.dn.toString();
     logger('info', 'SUFFIX bind for', { dn });
+    const users = getUsers();
 
-    const user = adArgs.users.find((u) => {
+    if (isLeft(users)) {
+      return next(new ldap.InvalidCredentialsError(users.value.message));
+    }
+
+    const user = users.value.find((u) => {
       const x = `cn=${u.givenName} ${u.sn}, ${lowercaseDn(adArgs.usersBaseDN)}`;
       return dn === x && u.password === req.credentials;
     });
@@ -89,7 +95,13 @@ export const ActiveDirectoryServer = (adArgs: { bindDN: string; bindPassword: st
     const username = getUsername(req.filter.toString());
     logger('info', 'search for:', username);
 
-    const user = findUser(adArgs.users, username);
+    const users = getUsers();
+
+    if (isLeft(users)) {
+      return next(new ldap.InvalidCredentialsError(users.value.message));
+    }
+
+    const user = findUser(users.value, username);
 
     if (!user) {
       logger('info', 'no search result for', username);

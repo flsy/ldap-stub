@@ -7,7 +7,6 @@ const server = ActiveDirectoryServer({
   bindDN: getEnvVariable('LDAP_BIND_DN'),
   bindPassword: getEnvVariable('LDAP_BIND_PASSWORD'),
   usersBaseDN: getEnvVariable('LDAP_USERS_BASE_DN'),
-  users: JSON.parse(getEnvVariable('LDAP_USERS').trim()) || [],
   logger,
 });
 
