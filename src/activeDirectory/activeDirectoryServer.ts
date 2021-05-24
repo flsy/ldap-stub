@@ -86,11 +86,9 @@ export const ActiveDirectoryServer = (adArgs: ActiveDirectoryServerArgs) => {
     return result;
   };
 
-  const findUser = (users: IUser[], username: string) => users.find((u) => new RegExp(`^${username.replace(/\*/g, '.*')}$`).test(u.username));
+  const findUsers = (users: IUser[], username: string) => users.filter((u) => new RegExp(`^${username.replace(/\*/g, '.*')}$`).test(u.username));
 
   server.search(adArgs.suffix, authorize, (req: any, res: any, next: any) => {
-    const dn = req.dn.toString();
-
     // todo: dont always want to search by username
     const username = getUsername(req.filter.toString());
     logger('info', 'search for:', username);
@@ -101,20 +99,24 @@ export const ActiveDirectoryServer = (adArgs: ActiveDirectoryServerArgs) => {
       return next(new Error(users.value.message));
     }
 
-    const user = findUser(users.value, username);
+    const searchedUsers = findUsers(users.value, username);
 
-    if (!user) {
+    if (searchedUsers.length === 0) {
       logger('info', 'no search result for', username);
-      return next(new ldap.NoSuchObjectError(dn));
+      return next(new ldap.NoSuchObjectError(`No user found`));
     }
 
-    res.send({
-      dn: req.dn.toString(),
-      attributes: {
-        ...user,
-        distinguishedName: `CN=${user.givenName} ${user.sn},${adArgs.usersBaseDN}`,
-      },
+    searchedUsers.forEach((user) => {
+      logger('info', `Search success for user ${user.username}`);
+      res.send({
+        dn: req.dn.toString(),
+        attributes: {
+          ...user,
+          distinguishedName: `CN=${user.givenName} ${user.sn},${adArgs.usersBaseDN}`,
+        },
+      });
     });
+
     res.end();
   });
   return server;

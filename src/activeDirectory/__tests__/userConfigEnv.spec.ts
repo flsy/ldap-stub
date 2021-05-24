@@ -68,6 +68,60 @@ describe('different user configs for server', () => {
         },
       ]);
     });
+
+    it('should search more users', async () => {
+      process.env['LDAP_USERS'] = JSON.stringify([
+        {
+          password: 'x',
+          username: 'x',
+          mail: 'x@x',
+          telephoneNumber: 'x',
+          givenName: 'x',
+          sn: 'x',
+          displayName: 'x x',
+          memberOf: [''],
+          userPrincipalName: 'x@x',
+        },
+        {
+          password: 'xy',
+          username: 'xy',
+          mail: 'xy@xy',
+          telephoneNumber: 'xy',
+          givenName: 'xy',
+          sn: 'xy',
+          displayName: 'xy xy',
+          memberOf: [''],
+          userPrincipalName: 'xy@xy',
+        },
+      ]);
+      const server = await serverMock(1234, ldapMockSettings);
+      const result = await activeDirectoryClient(ldapMockSettings).search({
+        ...optionsMock,
+        filter: `(&(objectCategory=person)(objectClass=user)(sAMAccountName=*x*))`,
+      });
+      await server.close();
+
+      expect(isRight(result) && result.value).toEqual([
+        {
+          distinguishedName: ['CN=x x,CN=Users,DC=example,DC=com'],
+          givenName: ['x'],
+          mail: ['x@x'],
+          memberOf: [''],
+          sn: ['x'],
+          telephoneNumber: ['x'],
+          userPrincipalName: ['x@x'],
+        },
+        {
+          distinguishedName: ['CN=xy xy,CN=Users,DC=example,DC=com'],
+          givenName: ['xy'],
+          mail: ['xy@xy'],
+          memberOf: [''],
+          sn: ['xy'],
+          telephoneNumber: ['xy'],
+          userPrincipalName: ['xy@xy'],
+        },
+      ]);
+    });
   });
 
   describe('USERS_CONFIG_FILE', () => {
@@ -75,7 +129,7 @@ describe('different user configs for server', () => {
       setUserConfigFileEnv();
 
       const server = await serverMock(1234, ldapMockSettings);
-      const search = await activeDirectoryClient(ldapMockSettings).search({ ...optionsMock, filter: '(sAMAccountName=*)' });
+      const search = await activeDirectoryClient(ldapMockSettings).search({ ...optionsMock, filter: '(sAMAccountName=us*)' });
       await server.close();
 
       expect(isRight(search) && search.value).toEqual([
@@ -101,7 +155,7 @@ describe('different user configs for server', () => {
       ]);
 
       const server = await serverMock(1234, ldapMockSettings);
-      const search = await activeDirectoryClient(ldapMockSettings).search({ ...optionsMock, filter: '(sAMAccountName=*)' });
+      const search = await activeDirectoryClient(ldapMockSettings).search({ ...optionsMock, filter: '(sAMAccountName=user)' });
       await server.close();
 
       if (isLeft(search)) {
