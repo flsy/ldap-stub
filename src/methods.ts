@@ -134,7 +134,7 @@ export const searchResult = (entries: SearchEntry[], attributes: SearchOptions['
     return toArray(attributes).reduce((all, current) => {
       const value = attrs.find((a) => a.type === current);
 
-      if (!value.vals) return all;
+      if (!value?.vals) return all;
 
       return { ...all, [current]: value.vals };
     }, {});
