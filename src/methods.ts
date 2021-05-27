@@ -68,32 +68,37 @@ export const bind = (client: Client, username: string, password: string): Promis
 
 export const search = (client: Client, base: string, options: SearchOptions): Promise<Either<Error, SearchEntry[]>> =>
   new Promise((resolve) => {
-    client.search(base, options, (error, result) => {
-      if (error) {
-        logger('error', 'ldap search', error.message);
-        return resolve(Left(error));
-      }
-
-      const searchList: SearchEntry[] = [];
-
-      result.on('searchEntry', (entry) => {
-        searchList.push(entry);
-      });
-
-      result.on('error', (err) => {
-        // LDAP_NO_SUCH_OBJECT
-        if (err.code === 32) {
-          return resolve(Right([]));
+    try {
+      client.search(base, options, (error, result) => {
+        if (error) {
+          logger('error', 'ldap search', error.message);
+          return resolve(Left(error));
         }
-        logger('error', 'ldap search error', err.message);
-        return resolve(Left(err));
-      });
 
-      result.on('end', () => {
-        logger('debug', 'ldap search end', base, 'results:', searchList.length);
-        resolve(Right(searchList));
+        const searchList: SearchEntry[] = [];
+
+        result.on('searchEntry', (entry) => {
+          searchList.push(entry);
+        });
+
+        result.on('error', (err) => {
+          // LDAP_NO_SUCH_OBJECT
+          if (err.code === 32) {
+            return resolve(Right([]));
+          }
+          logger('error', 'ldap search error', err.message);
+          return resolve(Left(err));
+        });
+
+        result.on('end', () => {
+          logger('debug', 'ldap search end', base, 'results:', searchList.length);
+          resolve(Right(searchList));
+        });
       });
-    });
+    } catch (error) {
+      logger('error', 'ldap search catch error', base, error.message);
+      return resolve(Right([]));
+    }
   });
 
 export const bindAndSearch = async (client: Client, config: ILdapConfig, options?: SearchOptions): Promise<Either<Error, SearchEntry[]>> => {

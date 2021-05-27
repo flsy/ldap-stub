@@ -1,4 +1,4 @@
-import { getGroups, getUserAttributes } from '../methods';
+import { getGroups, getUserAttributes, searchResult } from '../methods';
 import { optionsMock } from '../mocks';
 
 const ldapAttributesMock = [
@@ -104,6 +104,18 @@ describe('methods test suite', () => {
         distinguishedName: ['CN=John Snow,OU=Users,DC=example, DC=com'],
         memberOf: ['CN=Admins,OU=Groups,DC=example,DC=com', 'CN=Audit,OU=Groups,DC=example,DC=com'],
       });
+    });
+  });
+
+  describe('searchResult', () => {
+    it('r works', () => {
+      const result = searchResult([{ attributes: [{ toString: () => '{}' }] } as any], '?');
+      expect(result).toEqual([{}]);
+    });
+
+    it('works', () => {
+      const result = searchResult([{ attributes: [{ toString: () => '{"type":"mine","vals":["a", "b"]}' }] } as any], 'mine');
+      expect(result).toEqual([{ mine: ['a', 'b'] }]);
     });
   });
 });
