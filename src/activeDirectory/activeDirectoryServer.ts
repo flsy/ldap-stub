@@ -69,8 +69,8 @@ export const ActiveDirectoryServer = (adArgs: ActiveDirectoryServerArgs) => {
     const boundUser = bindUserByDn(binddn, users.value);
 
     if (!binddn.equals(adArgs.bindDN) && !boundUser) {
-      logger('error', 'Bound user is not same as current connection user');
-      return next(new ldap.InsufficientAccessRightsError(`currently binded user: ${binddn}, config user: ${adArgs.bindDN}`));
+      logger('error', 'Failed to bind user');
+      return next(new ldap.InsufficientAccessRightsError(`bound user: ${binddn}`));
     }
 
     return next();
