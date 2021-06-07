@@ -11,6 +11,7 @@ export const user: IUser = {
   displayName: 'SNOW John',
   memberOf: ['CN=Admins,CN=Groups,DC=example,DC=com', 'CN=Audit,CN=Groups,DC=example,DC=com'],
   userPrincipalName: 'user@example.com',
+  distinguishedName: 'CN=John Snow, CN=Users, DC=example, DC=com',
 };
 
 export const optionsMock: SearchOptions = {
