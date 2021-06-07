@@ -1,6 +1,7 @@
 import { Either, isArray, isLeft, Left, Maybe, Right } from 'fputils';
 import { IUser } from './interfaces';
 import fs from 'fs';
+import { NoSuchObjectError } from 'ldapjs';
 
 interface ParsedConfig {
   users: IUser[];
@@ -15,6 +16,11 @@ interface ParseConfig {
 export interface IGroup {
   name: string;
   children?: IGroup[];
+}
+
+export interface IGroupResult {
+  name: string;
+  memberOf?: string;
 }
 
 export const logger = (type: 'info' | 'error' | 'debug', ...args: any[]) => console.log(new Date().toISOString(), `[${type}]`, ...args);
@@ -77,4 +83,41 @@ export const getUsersAndGroups = (): Maybe<ParsedConfig> => {
   }
 
   return config;
+};
+
+export const getGroupsFromConfig = (groups: IGroup[]): IGroupResult[] =>
+  groups.reduce((acc, curr) => {
+    if (curr.children) {
+      const children = getGroupsFromConfig(curr.children).map((child) => ({ name: child.name, memberOf: child.memberOf || curr.name }));
+
+      return [...acc, { name: curr.name }, ...children];
+    }
+
+    return [...acc, { name: curr.name }];
+  }, [] as IGroupResult[]);
+
+const getGroupFromFilter = (groupFilter: string) =>
+  groupFilter
+    .split('(')
+    .find((value) => value.toLowerCase().startsWith('cn='))
+    .split(')')[0];
+
+const findGroup = (groupName: string, groups: IGroup[]): IGroupResult => {
+  const parsed = getGroupsFromConfig(groups);
+  return parsed.find((group) => group.name.toLowerCase() === groupName.toLowerCase());
+};
+
+export const getGroupResponse = (searchFilter: string, groups: IGroup[]): Either<NoSuchObjectError, IGroupResult> => {
+  const group = getGroupFromFilter(searchFilter);
+  logger('info', 'group search for', group);
+
+  const groupSearch = findGroup(group, groups);
+
+  if (!groupSearch) {
+    logger('info', 'Group not found', group);
+    return Left(new NoSuchObjectError());
+  }
+
+  logger('info', `Group ${groupSearch.name} successfully found`);
+  return Right(groupSearch);
 };
