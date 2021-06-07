@@ -1,4 +1,4 @@
-import { isLeft, Left, Maybe, Right } from 'fputils';
+import { isArray, isLeft, Left, Maybe, Right } from 'fputils';
 import { IUser } from './interfaces';
 import fs from 'fs';
 
@@ -31,6 +31,8 @@ export const parseJson = (content?: string): Maybe<ParsedConfig> => {
 
 const isUserConfigEnvSet = (ldapUsersEnv?: string, usersConfigFileEnv?: string): boolean => !!ldapUsersEnv || !!usersConfigFileEnv;
 
+const isConfigurationArray = (config: ParsedConfig): boolean => isArray(config.users) || isArray(config.groups);
+
 const parseConfig = (ldapUsersEnv?: string, usersConfigFileEnv?: string): ParseConfig => {
   const shouldLoadFromFile = !!usersConfigFileEnv;
 
@@ -57,7 +59,7 @@ export const getUsersAndGroups = (): Maybe<ParsedConfig> => {
     return config;
   }
 
-  if (!Array.isArray(config.value.users || !Array.isArray(config.value.groups))) {
+  if (!isConfigurationArray(config.value)) {
     logger('error', 'Configuration is not array.');
     return Left(new Error(`Configuration is not array. Received: ${JSON.stringify(config.value)}`));
   }

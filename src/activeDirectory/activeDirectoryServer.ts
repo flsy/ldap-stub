@@ -77,7 +77,7 @@ export const ActiveDirectoryServer = (adArgs: ActiveDirectoryServerArgs) => {
 
     const usersAndGroups = getUsersAndGroups();
     if (isLeft(usersAndGroups)) {
-      return next(new Error(usersAndGroups.value.message));
+      return next(usersAndGroups.value);
     }
 
     const boundUser = bindUser(binddn, usersAndGroups.value.users, adArgs);
