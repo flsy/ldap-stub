@@ -1,11 +1,11 @@
 import ldap from 'ldapjs';
 import { ActiveDirectoryServerArgs, IUser } from '../interfaces';
-import { isLeft, Optional } from 'fputils';
+import { Either, isLeft, Left, Optional, Right } from 'fputils';
 import { getUsers } from '../tools';
 
 type DNType = 'DC=' | 'CN=' | 'OU=';
 type Attribute = 'userprincipalname' | 'samaccountname';
-type BindDN = { equals: (value: string) => void };
+type BindDN = { equals: (value: string) => boolean };
 
 const dnTypes: DNType[] = ['DC=', 'CN=', 'OU='];
 
@@ -56,21 +56,29 @@ export const ActiveDirectoryServer = (adArgs: ActiveDirectoryServerArgs) => {
     return next();
   });
 
-  const bindUserByDn = (dn: BindDN, users: IUser[]): Optional<IUser> => users.find((user) => user.distinguishedName && dn.equals(user.distinguishedName));
+  const bindUser = (binddn: BindDN, users: IUser[], ADArgs: ActiveDirectoryServerArgs): Either<string, IUser> => {
+    const boundUser = users.find((user) => user.distinguishedName && binddn.equals(user.distinguishedName));
+
+    if (!binddn.equals(ADArgs.bindDN) && !boundUser) {
+      logger('error', 'Failed to bind user');
+      return Left(`bound user: ${binddn}`);
+    }
+
+    return Right(boundUser);
+  };
 
   const authorize = (req: any, _: any, next: any) => {
     const binddn = req.connection.ldap.bindDN;
 
     const users = getUsers();
     if (isLeft(users)) {
-      return next(new Error(users.value.message));
+      return next(users.value);
     }
 
-    const boundUser = bindUserByDn(binddn, users.value);
+    const boundUser = bindUser(binddn, users.value, adArgs);
 
-    if (!binddn.equals(adArgs.bindDN) && !boundUser) {
-      logger('error', 'Failed to bind user');
-      return next(new ldap.InsufficientAccessRightsError(`bound user: ${binddn}`));
+    if (isLeft(boundUser)) {
+      return next(new ldap.InsufficientAccessRightsError(boundUser.value));
     }
 
     return next();
