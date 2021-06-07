@@ -5,6 +5,7 @@ import { getUsers } from '../tools';
 
 type DNType = 'DC=' | 'CN=' | 'OU=';
 type Attribute = 'userprincipalname' | 'samaccountname';
+type BindDN = { equals: (value: string) => void };
 
 const dnTypes: DNType[] = ['DC=', 'CN=', 'OU='];
 
@@ -55,10 +56,21 @@ export const ActiveDirectoryServer = (adArgs: ActiveDirectoryServerArgs) => {
     return next();
   });
 
+  const bindUserByDn = (dn: BindDN, users: IUser[]): Optional<IUser> => users.find((user) => user.distinguishedName && dn.equals(user.distinguishedName));
+
   const authorize = (req: any, _: any, next: any) => {
     const binddn = req.connection.ldap.bindDN;
-    if (!binddn.equals(adArgs.bindDN)) {
-      return next(new ldap.InsufficientAccessRightsError());
+
+    const users = getUsers();
+    if (isLeft(users)) {
+      return next(new Error(users.value.message));
+    }
+
+    const boundUser = bindUserByDn(binddn, users.value);
+
+    if (!binddn.equals(adArgs.bindDN) && !boundUser) {
+      logger('error', 'Bound user is not same as current connection user');
+      return next(new ldap.InsufficientAccessRightsError(`currently binded user: ${binddn}, config user: ${adArgs.bindDN}`));
     }
 
     return next();

@@ -10,6 +10,7 @@ interface ILdapUserAccount {
   telephoneNumber?: string;
   memberOf: string | string[];
   userPrincipalName: string;
+  distinguishedName?: string;
 }
 
 export interface IUser extends ILdapUserAccount {
