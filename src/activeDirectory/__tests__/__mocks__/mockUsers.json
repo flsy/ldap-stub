@@ -1,28 +1,44 @@
-[
-  {
-    "password": "password",
-    "username": "user",
-    "mail": "joe@email",
-    "telephoneNumber": "123456789",
-    "givenName": "John",
-    "sn": "Snow",
-    "displayName": "SNOW John",
-    "memberOf": ["CN=Admins,CN=Groups,DC=example,DC=com", "CN=Audit,CN=Groups,DC=example,DC=com"],
-    "userPrincipalName": "user@example.com",
-    "distinguishedName" : "CN=John Snow, CN=Users, DC=example, DC=com"
-  },
-  {
-    "username": "arya",
-    "password": "password",
-    "givenName": "Arya",
-    "sn": "Stark",
-    "displayName": "STARK Arya",
-    "mail": "arya.stark@example.com",
-    "telephoneNumber": "456789123",
-    "memberOf": [
-      "CN=Marketing,OU=Groups,DC=example,DC=com",
-      "CN=All,OU=Groups,DC=example,DC=com"
-    ],
-    "userPrincipalName": "arya@example.com"
-  }
-]
+{
+  "users": [
+    {
+      "password": "password",
+      "username": "user",
+      "mail": "joe@email",
+      "telephoneNumber": "123456789",
+      "givenName": "John",
+      "sn": "Snow",
+      "displayName": "SNOW John",
+      "memberOf": ["CN=Admins,CN=Groups,DC=example,DC=com", "CN=Audit,CN=Groups,DC=example,DC=com"],
+      "userPrincipalName": "user@example.com",
+      "distinguishedName" : "CN=John Snow, CN=Users, DC=example, DC=com"
+    },
+    {
+      "username": "arya",
+      "password": "password",
+      "givenName": "Arya",
+      "sn": "Stark",
+      "displayName": "STARK Arya",
+      "mail": "arya.stark@example.com",
+      "telephoneNumber": "456789123",
+      "memberOf": [
+        "CN=Marketing,OU=Groups,DC=example,DC=com",
+        "CN=All,OU=Groups,DC=example,DC=com"
+      ],
+      "userPrincipalName": "arya@example.com"
+    }
+  ],
+  "groups": [
+    {
+      "name": "CN=Admins",
+      "children": [{
+        "name":  "CN=Local-Admins"
+      }]
+    }, {
+      "name": "CN=Audit"
+    }, {
+      "name": "CN=Marketing"
+    }, {
+      "name": "CN=All"
+    }
+  ]
+}

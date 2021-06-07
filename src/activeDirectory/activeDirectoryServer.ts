@@ -1,7 +1,7 @@
 import ldap, { InsufficientAccessRightsError } from 'ldapjs';
 import { ActiveDirectoryServerArgs, IUser } from '../interfaces';
 import { Either, isLeft, Left, Optional, Right } from 'fputils';
-import { getUsers } from '../tools';
+import { getUsersAndGroups } from '../tools';
 
 type DNType = 'DC=' | 'CN=' | 'OU=';
 type Attribute = 'userprincipalname' | 'samaccountname';
@@ -38,13 +38,13 @@ export const ActiveDirectoryServer = (adArgs: ActiveDirectoryServerArgs) => {
   server.bind(adArgs.suffix, (req: any, res: any, next: any) => {
     const dn = req.dn.toString();
     logger('info', 'SUFFIX bind for', { dn });
-    const users = getUsers();
+    const usersAndGroups = getUsersAndGroups();
 
-    if (isLeft(users)) {
-      return next(new Error(users.value.message));
+    if (isLeft(usersAndGroups)) {
+      return next(new Error(usersAndGroups.value.message));
     }
 
-    const user = users.value.find((u) => {
+    const user = usersAndGroups.value.users.find((u) => {
       const x = `cn=${u.givenName} ${u.sn}, ${lowercaseDn(adArgs.usersBaseDN)}`;
       return dn === x && u.password === req.credentials;
     });
@@ -75,12 +75,12 @@ export const ActiveDirectoryServer = (adArgs: ActiveDirectoryServerArgs) => {
   const authorize = (req: any, _: any, next: any) => {
     const binddn = req.connection.ldap.bindDN;
 
-    const users = getUsers();
-    if (isLeft(users)) {
-      return next(users.value);
+    const usersAndGroups = getUsersAndGroups();
+    if (isLeft(usersAndGroups)) {
+      return next(new Error(usersAndGroups.value.message));
     }
 
-    const boundUser = bindUser(binddn, users.value, adArgs);
+    const boundUser = bindUser(binddn, usersAndGroups.value.users, adArgs);
 
     if (isLeft(boundUser)) {
       return next(boundUser.value);
@@ -118,13 +118,15 @@ export const ActiveDirectoryServer = (adArgs: ActiveDirectoryServerArgs) => {
     const username = getUsername(req.filter.toString());
     logger('info', 'search for:', username);
 
-    const users = getUsers();
+    const usersAndGroups = getUsersAndGroups();
 
-    if (isLeft(users)) {
-      return next(new Error(users.value.message));
+    if (isLeft(usersAndGroups)) {
+      return next(usersAndGroups.value);
     }
 
-    const searchedUsers = findUsers(users.value, username);
+    const { users } = usersAndGroups.value;
+
+    const searchedUsers = findUsers(users, username);
 
     if (searchedUsers.length === 0) {
       logger('info', 'no search result for', username);
