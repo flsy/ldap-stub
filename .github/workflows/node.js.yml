@@ -11,8 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: yarn
-#      - run: yarn prettier
-#      - run: yarn lint
-      - run: yarn build
-      - run: yarn jest --forceExit
+      - name: Build
+        run: |
+          yarn build
+          VERSION=$(github.run_id)
+
+
+#    steps:
+#      - uses: actions/checkout@v2
+#      - run: yarn
+#      #      - run: yarn prettier
+#      #      - run: yarn lint
+#      - run: yarn build
+#      - run: yarn jest --forceExit
