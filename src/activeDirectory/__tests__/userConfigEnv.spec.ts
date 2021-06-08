@@ -34,7 +34,16 @@ describe('different configs for server', () => {
       const search = await activeDirectoryClient(ldapMockSettings).search({ ...optionsMock, filter: '(mail=*)' });
       await server.close();
 
-      expect(isLeft(search) && search.value).toEqual(Error('Search error: Configuration is not array. Received: {}'));
+      expect(isLeft(search) && search.value).toEqual(Error('Search error: User configuration is not array. Received: {}'));
+    });
+
+    it('should fail to load when groups config is not array', async () => {
+      process.env['LDAP_USERS'] = JSON.stringify({ users: [], groups: {} });
+      const server = await serverMock(1234, ldapMockSettings);
+      const search = await activeDirectoryClient(ldapMockSettings).search({ ...optionsMock, filter: '(mail=*)' });
+      await server.close();
+
+      expect(isLeft(search) && search.value).toEqual(Error('Search error: Group configuration is not array. Received: {"users":[],"groups":{}}'));
     });
 
     it('should load user config from environment variable LDAP_USERS', async () => {
