@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - master
-    tags:
-      - v*
-  pull_request:
 
 env:
   IMAGE_NAME: ldap-stub
@@ -40,7 +37,7 @@ jobs:
           # Change all uppercase to lowercase
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
 
-          VERSION=$(git rev-parse --short HEAD)
+          VERSION=$(github.run_id)
 
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
