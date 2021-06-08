@@ -28,7 +28,7 @@ describe('search group', () => {
     expect(isRight(result) && result.value).toEqual([]);
   });
 
-  it('should search user by group in Active Directory', async () => {
+  it('should search group CN=Audit', async () => {
     const server = await serverMock(1234, ldapMockSettings);
     const result = await activeDirectoryClient(ldapMockSettings).search({
       ...optionsMock,

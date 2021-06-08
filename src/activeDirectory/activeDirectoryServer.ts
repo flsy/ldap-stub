@@ -1,7 +1,7 @@
 import ldap, { InsufficientAccessRightsError } from 'ldapjs';
 import { ActiveDirectoryServerArgs, IUser } from '../interfaces';
 import { Either, isLeft, Left, Optional, Right } from 'fputils';
-import { getGroupResponse, getUsersAndGroups } from '../tools';
+import { getGroup, getUsersAndGroups } from '../tools';
 
 type DNType = 'DC=' | 'CN=' | 'OU=';
 type Attribute = 'userprincipalname' | 'samaccountname';
@@ -126,7 +126,7 @@ export const ActiveDirectoryServer = (adArgs: ActiveDirectoryServerArgs) => {
     const { users, groups } = usersAndGroups.value;
 
     if (searchFilter.includes('objectcategory=group')) {
-      const group = getGroupResponse(searchFilter, groups);
+      const group = getGroup(searchFilter, groups);
 
       if (isLeft(group)) {
         return next(group.value);
@@ -154,7 +154,7 @@ export const ActiveDirectoryServer = (adArgs: ActiveDirectoryServerArgs) => {
     searchedUsers.forEach((user) => {
       logger('info', `Search success for user ${user.username}`);
       res.send({
-        dn: req.dn.toString(),
+        dn,
         attributes: {
           ...user,
           distinguishedName: `CN=${user.givenName} ${user.sn},${adArgs.usersBaseDN}`,

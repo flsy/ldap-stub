@@ -96,7 +96,7 @@ export const getGroupsFromConfig = (groups: IGroup[]): IGroupResult[] =>
     return [...acc, { name: curr.name }];
   }, [] as IGroupResult[]);
 
-const getGroupFromFilter = (groupFilter: string) =>
+const getGroupFromFilter = (groupFilter: string): string =>
   groupFilter
     .split('(')
     .find((value) => value.toLowerCase().startsWith('cn='))
@@ -107,7 +107,7 @@ const findGroup = (groupName: string, groups: IGroup[]): IGroupResult => {
   return parsed.find((group) => group.name.toLowerCase() === groupName.toLowerCase());
 };
 
-export const getGroupResponse = (searchFilter: string, groups: IGroup[]): Either<NoSuchObjectError, IGroupResult> => {
+export const getGroup = (searchFilter: string, groups: IGroup[]): Either<NoSuchObjectError, IGroupResult> => {
   const group = getGroupFromFilter(searchFilter);
   logger('info', 'group search for', group);
 
