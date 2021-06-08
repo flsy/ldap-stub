@@ -3,7 +3,7 @@ import { activeDirectoryClient } from '../activeDirectoryClient';
 import { ldapMockSettings, optionsMock } from '../../mocks';
 import { isLeft, isRight } from 'fputils';
 
-describe('different user configs for server', () => {
+describe('different configs for server', () => {
   beforeEach(() => {
     process.env['USERS_CONFIG_FILE'] = '';
     process.env['LDAP_USERS'] = '';
@@ -19,7 +19,7 @@ describe('different user configs for server', () => {
     });
 
     it('should load []', async () => {
-      process.env['LDAP_USERS'] = JSON.stringify([]);
+      process.env['LDAP_USERS'] = JSON.stringify({ users: [], groups: [] });
       const server = await serverMock(1234, ldapMockSettings);
 
       const result = await activeDirectoryClient(ldapMockSettings).search({ ...optionsMock, filter: '(sn=*)' });
@@ -34,23 +34,35 @@ describe('different user configs for server', () => {
       const search = await activeDirectoryClient(ldapMockSettings).search({ ...optionsMock, filter: '(mail=*)' });
       await server.close();
 
-      expect(isLeft(search) && search.value).toEqual(Error('Search error: Users configuration is not array. Received: {}'));
+      expect(isLeft(search) && search.value).toEqual(Error('Search error: User configuration is not array. Received: {}'));
+    });
+
+    it('should fail to load when groups config is not array', async () => {
+      process.env['LDAP_USERS'] = JSON.stringify({ users: [], groups: {} });
+      const server = await serverMock(1234, ldapMockSettings);
+      const search = await activeDirectoryClient(ldapMockSettings).search({ ...optionsMock, filter: '(mail=*)' });
+      await server.close();
+
+      expect(isLeft(search) && search.value).toEqual(Error('Search error: Group configuration is not array. Received: {"users":[],"groups":{}}'));
     });
 
     it('should load user config from environment variable LDAP_USERS', async () => {
-      process.env['LDAP_USERS'] = JSON.stringify([
-        {
-          password: 'x',
-          username: 'x',
-          mail: 'x@x',
-          telephoneNumber: 'x',
-          givenName: 'x',
-          sn: 'x',
-          displayName: 'x x',
-          memberOf: [''],
-          userPrincipalName: 'x@x',
-        },
-      ]);
+      process.env['LDAP_USERS'] = JSON.stringify({
+        users: [
+          {
+            password: 'x',
+            username: 'x',
+            mail: 'x@x',
+            telephoneNumber: 'x',
+            givenName: 'x',
+            sn: 'x',
+            displayName: 'x x',
+            memberOf: [''],
+            userPrincipalName: 'x@x',
+          },
+        ],
+        groups: [],
+      });
 
       const server = await serverMock(1234, ldapMockSettings);
       const search = await activeDirectoryClient(ldapMockSettings).search({ ...optionsMock, filter: '(sAMAccountName=*)' });
@@ -70,30 +82,33 @@ describe('different user configs for server', () => {
     });
 
     it('should search more users', async () => {
-      process.env['LDAP_USERS'] = JSON.stringify([
-        {
-          password: 'x',
-          username: 'x',
-          mail: 'x@x',
-          telephoneNumber: 'x',
-          givenName: 'x',
-          sn: 'x',
-          displayName: 'x x',
-          memberOf: [''],
-          userPrincipalName: 'x@x',
-        },
-        {
-          password: 'xy',
-          username: 'xy',
-          mail: 'xy@xy',
-          telephoneNumber: 'xy',
-          givenName: 'xy',
-          sn: 'xy',
-          displayName: 'xy xy',
-          memberOf: [''],
-          userPrincipalName: 'xy@xy',
-        },
-      ]);
+      process.env['LDAP_USERS'] = JSON.stringify({
+        users: [
+          {
+            password: 'x',
+            username: 'x',
+            mail: 'x@x',
+            telephoneNumber: 'x',
+            givenName: 'x',
+            sn: 'x',
+            displayName: 'x x',
+            memberOf: [''],
+            userPrincipalName: 'x@x',
+          },
+          {
+            password: 'xy',
+            username: 'xy',
+            mail: 'xy@xy',
+            telephoneNumber: 'xy',
+            givenName: 'xy',
+            sn: 'xy',
+            displayName: 'xy xy',
+            memberOf: [''],
+            userPrincipalName: 'xy@xy',
+          },
+        ],
+        groups: [],
+      });
       const server = await serverMock(1234, ldapMockSettings);
       const result = await activeDirectoryClient(ldapMockSettings).search({
         ...optionsMock,
