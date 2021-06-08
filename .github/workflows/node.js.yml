@@ -20,6 +20,14 @@ jobs:
       - name: Test
         run: yarn jest --forceExit
 
+      - name: Publish code coverage
+        uses: paambaati/codeclimate-action@v2.7.5
+        env:
+          CC_TEST_REPORTER_ID: 378a58075748276250aecb707f59127cac7bce5644e419d1d078d0f54ed5f335
+        with:
+          coverageCommand: yarn coverage --forceExit
+
+
   docker-push:
     runs-on: ubuntu-latest
     needs: build-and-test
