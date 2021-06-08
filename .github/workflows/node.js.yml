@@ -37,10 +37,15 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Build image
-        run: docker build . --file Dockerfile --tag ldap-stub:${{ github.run_id }}
+        run: docker build . --file Dockerfile --tag ldap-stub
 
       - name: Log into registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
 
       - name: Push image
-        run: docker push docker.pkg.github.com/flsy/ldap-stub/ldap-stub:${{ github.run_id }}
+        run: |
+          VERSION=${{ github.run_id }}
+          IMAGE_ID=docker.pkg.github.com/flsy/ldap-stub/ldap-stub
+
+          docker tag ldap-stub $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION
