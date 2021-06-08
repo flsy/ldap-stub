@@ -1,7 +1,7 @@
 import ldap, { InsufficientAccessRightsError } from 'ldapjs';
 import { ActiveDirectoryServerArgs, IUser } from '../interfaces';
 import { Either, isLeft, Left, Optional, Right } from 'fputils';
-import { getUsersAndGroups } from '../tools';
+import { getGroup, getUsersAndGroups } from '../tools';
 
 type DNType = 'DC=' | 'CN=' | 'OU=';
 type Attribute = 'userprincipalname' | 'samaccountname';
@@ -114,9 +114,8 @@ export const ActiveDirectoryServer = (adArgs: ActiveDirectoryServerArgs) => {
   const findUsers = (users: IUser[], username: string) => users.filter((u) => new RegExp(`^${username.replace(/\*/g, '.*')}$`).test(u.username));
 
   server.search(adArgs.suffix, authorize, (req: any, res: any, next: any) => {
-    // todo: dont always want to search by username
-    const username = getUsername(req.filter.toString());
-    logger('info', 'search for:', username);
+    const dn = req.dn.toString();
+    const searchFilter = req.filter.toString();
 
     const usersAndGroups = getUsersAndGroups();
 
@@ -124,7 +123,26 @@ export const ActiveDirectoryServer = (adArgs: ActiveDirectoryServerArgs) => {
       return next(usersAndGroups.value);
     }
 
-    const { users } = usersAndGroups.value;
+    const { users, groups } = usersAndGroups.value;
+
+    if (searchFilter.toLowerCase().includes('objectcategory=group')) {
+      const group = getGroup(searchFilter, groups);
+
+      if (isLeft(group)) {
+        return next(group.value);
+      }
+
+      res.send({
+        dn,
+        attributes: group.value,
+      });
+
+      return res.end();
+    }
+
+    // todo: dont always want to search by username
+    const username = getUsername(req.filter.toString());
+    logger('info', 'search for:', username);
 
     const searchedUsers = findUsers(users, username);
 
@@ -136,7 +154,7 @@ export const ActiveDirectoryServer = (adArgs: ActiveDirectoryServerArgs) => {
     searchedUsers.forEach((user) => {
       logger('info', `Search success for user ${user.username}`);
       res.send({
-        dn: req.dn.toString(),
+        dn,
         attributes: {
           ...user,
           distinguishedName: `CN=${user.givenName} ${user.sn},${adArgs.usersBaseDN}`,
