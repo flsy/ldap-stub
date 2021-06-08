@@ -125,7 +125,7 @@ export const ActiveDirectoryServer = (adArgs: ActiveDirectoryServerArgs) => {
 
     const { users, groups } = usersAndGroups.value;
 
-    if (searchFilter.includes('objectcategory=group')) {
+    if (searchFilter.toLowerCase().includes('objectcategory=group')) {
       const group = getGroup(searchFilter, groups);
 
       if (isLeft(group)) {

@@ -1,4 +1,4 @@
-import { Either, isArray, isLeft, Left, Maybe, Right } from 'fputils';
+import { Either, isArray, isLeft, Left, Maybe, Optional, Right } from 'fputils';
 import { IUser } from './interfaces';
 import fs from 'fs';
 import { NoSuchObjectError } from 'ldapjs';
@@ -102,7 +102,7 @@ const getGroupFromFilter = (groupFilter: string): string =>
     .find((value) => value.toLowerCase().startsWith('cn='))
     .split(')')[0];
 
-const findGroup = (groupName: string, groups: IGroup[]): IGroupResult => {
+const findGroup = (groupName: string, groups: IGroup[]): Optional<IGroupResult> => {
   const parsed = getGroupsFromConfig(groups);
   return parsed.find((group) => group.name.toLowerCase() === groupName.toLowerCase());
 };
@@ -114,7 +114,7 @@ export const getGroup = (searchFilter: string, groups: IGroup[]): Either<NoSuchO
   const groupSearch = findGroup(group, groups);
 
   if (!groupSearch) {
-    logger('info', 'Group not found', group);
+    logger('error', 'Group not found', group);
     return Left(new NoSuchObjectError());
   }
 
