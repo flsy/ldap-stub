@@ -1,11 +1,20 @@
 import { bind, bindAndSearch, searchResult, getAttribute, getAttributes, getClient, getUserAttributes } from '../methods';
 import { ILdapConfig, ILdapService } from '../interfaces';
-import { logger } from '../tools';
-import { Maybe, isLeft, Left, Right, head } from 'fputils';
+import { conditionally, logger } from '../tools';
+import { Maybe, isLeft, Left, Right, head, untilResolved } from 'fputils';
 
 export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
   login: async <T>(password, options): Promise<Maybe<T>> => {
-    const client = await getClient({ url: config.serverUrl, timeout: 1000, connectTimeout: 1000 });
+    const client = conditionally(
+      Array.isArray,
+      (urls) => {
+        return untilResolved(urls.map((url) => getClient({ url, timeout: 1000, connectTimeout: 1000 })));
+      },
+      (url) => {
+        return getClient({ url, timeout: 1000, connectTimeout: 1000 });
+      },
+    )(config.serverUrl);
+
     if (isLeft(client)) {
       logger('error', 'ldapService', client.value.message);
       return client;

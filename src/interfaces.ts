@@ -23,7 +23,7 @@ export interface ILdapServiceAccount {
 }
 
 export interface ILdapConfig {
-  serverUrl: string;
+  serverUrl: string | string[];
   bindDN: string;
   bindPwd: string;
   suffix: string;

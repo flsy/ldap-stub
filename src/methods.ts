@@ -1,8 +1,8 @@
 import ldap from 'ldapjs';
 import { Attribute, Client, ClientOptions, SearchEntry, SearchOptions } from 'ldapjs';
-import { logger, notEmpty } from './tools';
+import { conditionally, logger, notEmpty } from './tools'
 import { ILdapConfig } from './interfaces';
-import { Either, isLeft, Left, Right, find, map, propEq, toArray } from 'fputils';
+import { Either, isLeft, Left, Right, find, map, propEq, toArray, untilResolved } from 'fputils'
 
 export const getGroups = (values: string[]): string[] => {
   try {
