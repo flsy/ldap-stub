@@ -6,7 +6,7 @@ import { openLdapClient } from '../openLdapClient';
 const account = { id: '9000', username: 'service_1', password: 'password' };
 const port = 5389;
 const openLdapConfig: IOpenLdapConfig = {
-  serverUrl: `ldap://localhost:${port}`,
+  serverUrl: [`ldap://localhost:${port}`],
   bindUser: {
     username: 'ldapadm',
     password: 'oldap',

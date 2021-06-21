@@ -122,5 +122,5 @@ export const getGroup = (searchFilter: string, groups: IGroup[]): Either<NoSuchO
   return Right(groupSearch);
 };
 
-export const conditionally = <Props, A, B>(cond: (props: Props) => boolean, a: (props: Props) => A, b: (props: Props) => B) => (props: Props): A | B =>
-  cond(props) ? a(props) : b(props);
+export const conditionally = <Props, A, B>(cond: (props: Props) => boolean, t: (props: Props) => A, f: (props: Props) => B) => (props: Props): A | B =>
+  cond(props) ? t(props) : f(props);

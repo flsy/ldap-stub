@@ -3,8 +3,6 @@ import { bind, getAttribute, getAttributes, getClient, search } from '../methods
 import { logger } from '../tools';
 import { isLeft, Left, Maybe, Right, head } from 'fputils';
 
-// const flatten = <T>(array: Array<T[]>): T[] => array.reduce((acc, val) => acc.concat(val), []);
-
 export const openLdapClient = (config: IOpenLdapConfig): IOpenLdapService => {
   const suffix = config.dc.map((bit) => `DC=${bit}`).join(',');
   const bindDN = `CN=${config.bindUser.username},${suffix}`;

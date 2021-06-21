@@ -1,8 +1,8 @@
 import ldap from 'ldapjs';
 import { Attribute, Client, ClientOptions, SearchEntry, SearchOptions } from 'ldapjs';
-import { conditionally, logger, notEmpty } from './tools'
+import { conditionally, logger, notEmpty } from './tools';
 import { ILdapConfig } from './interfaces';
-import { Either, isLeft, Left, Right, find, map, propEq, toArray, untilResolved } from 'fputils'
+import { Either, isLeft, Left, Right, find, map, propEq, toArray, untilNotRight } from 'fputils';
 
 export const getGroups = (values: string[]): string[] => {
   try {
@@ -26,8 +26,8 @@ export const getGroups = (values: string[]): string[] => {
   }
 };
 
-export const getClient = (options: ClientOptions): Promise<Either<Error, Client>> =>
-  new Promise((resolve) => {
+const connect = async (options: ClientOptions): Promise<Either<Error, Client>> => {
+  return new Promise((resolve) => {
     const client = ldap.createClient(options);
 
     client.on('connect', () => {
@@ -54,6 +54,19 @@ export const getClient = (options: ClientOptions): Promise<Either<Error, Client>
       resolve(Left(error));
     });
   });
+};
+
+interface IGetClient extends Omit<ClientOptions, 'url'> {
+  url: string | string[];
+}
+
+export const getClient = async (options: IGetClient): Promise<Either<Error, Client>> => {
+  return conditionally(
+    Array.isArray,
+    (urls: string[]) => untilNotRight(urls.map((url) => connect({ url, timeout: 1000, connectTimeout: 1000 }))),
+    (url: string) => connect({ url, timeout: 1000, connectTimeout: 1000 }),
+  )(options.url);
+};
 
 export const bind = (client: Client, username: string, password: string): Promise<Either<Error, void>> =>
   new Promise((resolve) => {

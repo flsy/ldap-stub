@@ -38,7 +38,7 @@ interface ICommonConfig {
   };
 }
 export interface IOpenLdapConfig extends ICommonConfig {
-  serverUrl: string;
+  serverUrl: string | string[];
 }
 
 export interface OpenLdapServerConfig extends ICommonConfig {

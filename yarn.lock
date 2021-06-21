@@ -2495,10 +2495,10 @@ form-data@~2.3.2:
     combined-stream "^1.0.6"
     mime-types "^2.1.12"
 
-fputils@^1.2.2:
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/fputils/-/fputils-1.2.2.tgz#63213146ee2f9d4654043232f7c331be059dc4f9"
-  integrity sha512-n4FI5rqdXSR9E+gOrtQ34Bn5jbPuG+Vb2d+PVBgJFQzR8XcomIzRBnVDFUmUSGcDSXa2iLAwLir8FlO3RVkUHA==
+fputils@^1.2.4:
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/fputils/-/fputils-1.2.4.tgz#238166f85c57550f08f304bbf46854d2ff702ba6"
+  integrity sha512-+9BPayn2sIvO2md27QbZ+0Lve5LTO40P2LEy+yyHsxxTjadgA+qF6CLBXS2d7WeC61WhC84UL0LZ2GTFzLvi+Q==
 
 fragment-cache@^0.2.1:
   version "0.2.1"
