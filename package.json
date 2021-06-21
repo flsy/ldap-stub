@@ -1,6 +1,6 @@
 {
   "name": "ldap-stub",
-  "version": "0.0.17",
+  "version": "0.1.0",
   "description": "",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -54,6 +54,8 @@
   },
   "jest": {
     "testRegex": "\\.spec\\.ts$",
-    "coverageReporters": ["lcov"]
+    "coverageReporters": [
+      "lcov"
+    ]
   }
 }
