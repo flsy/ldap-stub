@@ -21,7 +21,7 @@ export const optionsMock: SearchOptions = {
 };
 
 export const ldapMockSettings: ILdapConfig = {
-  serverUrl: ['ldap://0.0.0.0:1234'],
+  serverUrl: 'ldap://0.0.0.0:1234',
   suffix: 'DC=example, DC=com',
   usersBaseDN: 'CN=Users,DC=example,DC=com',
   bindDN: 'CN=Administrator,CN=Users,DC=example,DC=com',
