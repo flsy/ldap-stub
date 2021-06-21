@@ -121,3 +121,6 @@ export const getGroup = (searchFilter: string, groups: IGroup[]): Either<NoSuchO
   logger('info', `Group ${groupSearch.name} successfully found`);
   return Right(groupSearch);
 };
+
+export const conditionally = <Props, A, B>(cond: (props: Props) => boolean, t: (props: Props) => A, f: (props: Props) => B) => (props: Props): A | B =>
+  cond(props) ? t(props) : f(props);

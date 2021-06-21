@@ -6,6 +6,7 @@ import { Maybe, isLeft, Left, Right, head } from 'fputils';
 export const activeDirectoryClient = (config: ILdapConfig): ILdapService => ({
   login: async <T>(password, options): Promise<Maybe<T>> => {
     const client = await getClient({ url: config.serverUrl, timeout: 1000, connectTimeout: 1000 });
+
     if (isLeft(client)) {
       logger('error', 'ldapService', client.value.message);
       return client;

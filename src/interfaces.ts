@@ -23,7 +23,7 @@ export interface ILdapServiceAccount {
 }
 
 export interface ILdapConfig {
-  serverUrl: string;
+  serverUrl: string | string[];
   bindDN: string;
   bindPwd: string;
   suffix: string;
@@ -38,7 +38,7 @@ interface ICommonConfig {
   };
 }
 export interface IOpenLdapConfig extends ICommonConfig {
-  serverUrl: string;
+  serverUrl: string | string[];
 }
 
 export interface OpenLdapServerConfig extends ICommonConfig {
